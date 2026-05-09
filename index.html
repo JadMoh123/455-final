@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EECE 632 Final — Cryptographer's Notebook</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Crimson+Text:wght@400;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\\\(',right:'\\\\)',display:false},{left:'\\\\[',right:'\\\\]',display:true}]})"></script>
+<style>
+:root{
+  --bg:#0e1116;
+  --bg-2:#161a22;
+  --bg-3:#1d2330;
+  --ink:#e8dcc4;
+  --ink-dim:#a89e88;
+  --ink-mute:#6b6354;
+  --rule:#2a3142;
+  --amber:#d4a017;
+  --amber-soft:#a87c0a;
+  --rust:#b65d3a;
+  --teal:#3a8a8a;
+  --crimson:#8b2e2e;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Crimson Text',Georgia,serif;font-size:17px;line-height:1.65}
+body{
+  background-image:
+    radial-gradient(circle at 15% 10%,rgba(212,160,23,.04) 0%,transparent 35%),
+    radial-gradient(circle at 85% 80%,rgba(58,138,138,.04) 0%,transparent 40%);
+  min-height:100vh;
+}
+a{color:var(--amber);text-decoration:none;border-bottom:1px dotted var(--amber-soft)}
+a:hover{color:#fff;border-bottom-color:#fff}
+
+/* Layout */
+.shell{display:grid;grid-template-columns:280px 1fr;max-width:1400px;margin:0 auto;min-height:100vh}
+@media(max-width:900px){.shell{grid-template-columns:1fr}}
+
+/* Sidebar */
+nav.toc{position:sticky;top:0;height:100vh;overflow-y:auto;padding:2rem 1.5rem 2rem 2rem;border-right:1px solid var(–rule);background:var(–bg-2)}
+@media(max-width:900px){nav.toc{position:static;height:auto;border-right:none;border-bottom:1px solid var(–rule)}}
+nav.toc h1{font-family:‘Cormorant Garamond’,serif;font-weight:600;font-style:italic;color:var(–amber);font-size:1.5rem;margin:0 0 .25rem 0;letter-spacing:.5px}
+nav.toc .subtitle{font-family:‘JetBrains Mono’,monospace;font-size:.7rem;color:var(–ink-mute);text-transform:uppercase;letter-spacing:2px;margin-bottom:.5rem}
+nav.toc .countdown{font-family:‘JetBrains Mono’,monospace;font-size:.78rem;color:var(–rust);margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(–rule)}
+nav.toc .countdown b{color:var(–amber)}
+nav.toc ol{list-style:none;padding:0;margin:0;counter-reset:topic}
+nav.toc ol li{counter-increment:topic;margin:0}
+nav.toc ol li a{display:block;padding:.45rem 0 .45rem 2.2rem;position:relative;color:var(–ink-dim);border-bottom:none;font-family:‘Cormorant Garamond’,serif;font-size:1.05rem;line-height:1.3;transition:color .2s,padding .2s}
+nav.toc ol li a::before{content:counter(topic,decimal-leading-zero);position:absolute;left:0;top:.5rem;font-family:‘JetBrains Mono’,monospace;font-size:.7rem;color:var(–ink-mute);letter-spacing:1px}
+nav.toc ol li a:hover{color:var(–amber);padding-left:2.5rem}
+nav.toc ol li a.active{color:var(–amber);font-weight:500}
+nav.toc ol li a.active::before{color:var(–amber)}
+nav.toc .group-label{font-family:‘JetBrains Mono’,monospace;font-size:.65rem;color:var(–ink-mute);text-transform:uppercase;letter-spacing:2px;margin:1.4rem 0 .4rem 0;padding-bottom:.3rem;border-bottom:1px dashed var(–rule)}
+nav.toc .group-label:first-of-type{margin-top:0}
+
+/* Main */
+main{padding:3rem 3.5rem 6rem 3.5rem;max-width:900px}
+@media(max-width:900px){main{padding:2rem 1.5rem 4rem 1.5rem}}
+
+/* Header */
+.intro{margin-bottom:3.5rem;padding-bottom:2rem;border-bottom:2px solid var(–amber)}
+.intro .eyebrow{font-family:‘JetBrains Mono’,monospace;font-size:.72rem;color:var(–amber);text-transform:uppercase;letter-spacing:3px;margin-bottom:.6rem}
+.intro h1{font-family:‘Cormorant Garamond’,serif;font-size:3.2rem;line-height:1;margin:0 0 .5rem 0;font-weight:500}
+.intro h1 em{font-style:italic;color:var(–amber)}
+.intro p{color:var(–ink-dim);font-style:italic;margin:0;font-size:1.1rem}
+
+/* Section */
+section{margin-bottom:5rem;scroll-margin-top:1rem}
+section .num{font-family:‘JetBrains Mono’,monospace;font-size:.78rem;color:var(–amber);letter-spacing:3px;text-transform:uppercase;margin-bottom:.4rem}
+section h2{font-family:‘Cormorant Garamond’,serif;font-size:2.4rem;line-height:1.1;margin:0 0 .3rem 0;font-weight:600}
+section .tagline{color:var(–ink-dim);font-style:italic;margin-bottom:2rem;border-bottom:1px solid var(–rule);padding-bottom:1.2rem}
+
+/* Theory blocks */
+.method{background:linear-gradient(180deg,var(–bg-2) 0%,var(–bg-3) 100%);border-left:3px solid var(–amber);padding:1.5rem 1.8rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+.method h3,.example h3,.practice h3{font-family:‘JetBrains Mono’,monospace;font-size:.78rem;color:var(–amber);text-transform:uppercase;letter-spacing:2.5px;margin:0 0 1rem 0;font-weight:700}
+.method ol,.method ul{padding-left:1.4rem;margin:.6rem 0}
+.method li{margin-bottom:.5rem}
+.method p{margin:.6rem 0}
+
+.example{background:rgba(184,93,58,.06);border-left:3px solid var(–rust);padding:1.5rem 1.8rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+.example h3{color:var(–rust)}
+.example .qbox{font-style:italic;color:var(–ink);padding:.6rem 0 1rem 0;border-bottom:1px dashed var(–rule);margin-bottom:1rem}
+.example .step{margin:.6rem 0}
+.example .step b{color:var(–amber);font-family:‘JetBrains Mono’,monospace;font-size:.85rem;margin-right:.4rem}
+.example .ans{margin-top:1rem;padding:.7rem 1rem;background:rgba(212,160,23,.08);border:1px solid var(–amber-soft);border-radius:3px;font-family:‘JetBrains Mono’,monospace;font-size:.95rem;color:var(–amber)}
+
+.practice{background:rgba(58,138,138,.06);border-left:3px solid var(–teal);padding:1.5rem 1.8rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+.practice h3{color:var(–teal)}
+.practice .problem{margin-bottom:1rem;font-size:1.05rem}
+.practice .input-row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin:1rem 0}
+.practice input[type=text]{background:var(–bg);border:1px solid var(–rule);color:var(–ink);font-family:‘JetBrains Mono’,monospace;font-size:.95rem;padding:.5rem .8rem;border-radius:3px;width:160px;transition:border-color .2s}
+.practice input[type=text]:focus{outline:none;border-color:var(–amber)}
+.practice button{background:transparent;border:1px solid var(–teal);color:var(–teal);padding:.5rem 1.1rem;font-family:‘JetBrains Mono’,monospace;font-size:.78rem;text-transform:uppercase;letter-spacing:1.5px;cursor:pointer;border-radius:3px;transition:all .2s}
+.practice button:hover{background:var(–teal);color:var(–bg)}
+.practice button.solve{border-color:var(–amber);color:var(–amber)}
+.practice button.solve:hover{background:var(–amber);color:var(–bg)}
+.practice .verdict{font-family:‘JetBrains Mono’,monospace;font-size:.85rem;margin-left:.5rem}
+.practice .verdict.right{color:#7fbf7f}
+.practice .verdict.wrong{color:#d96c5b}
+.practice .solution{margin-top:1rem;padding:1rem 1.2rem;background:var(–bg-3);border-radius:3px;border-top:1px solid var(–amber);display:none}
+.practice .solution.show{display:block}
+.practice .solution .step{margin:.5rem 0}
+.practice .solution .step b{color:var(–amber);font-family:‘JetBrains Mono’,monospace;font-size:.85rem;margin-right:.4rem}
+.practice .solution .ans{margin-top:.8rem;padding:.5rem .8rem;background:rgba(212,160,23,.1);border-left:2px solid var(–amber);font-family:‘JetBrains Mono’,monospace;color:var(–amber)}
+
+/* Inline code & math */
+code,.mono{font-family:‘JetBrains Mono’,monospace;font-size:.92em;background:rgba(212,160,23,.08);padding:.05em .35em;border-radius:2px;color:#f0d896}
+.callout{background:rgba(139,46,46,.1);border-left:3px solid var(–crimson);padding:.9rem 1.2rem;margin:1.2rem 0;border-radius:0 3px 3px 0;font-size:.95rem}
+.callout b{color:var(–crimson)}
+.tag{display:inline-block;padding:.15rem .5rem;font-family:‘JetBrains Mono’,monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:1.5px;border-radius:2px;margin-right:.4rem}
+.tag.recur{background:rgba(212,160,23,.15);color:var(–amber);border:1px solid var(–amber-soft)}
+.tag.tier1{background:rgba(127,191,127,.12);color:#7fbf7f;border:1px solid #4a7a4a}
+.tag.tier2{background:rgba(58,138,138,.12);color:var(–teal);border:1px solid var(–teal)}
+.tag.tier3{background:rgba(184,93,58,.12);color:var(–rust);border:1px solid var(–rust)}
+
+table{border-collapse:collapse;margin:1rem 0;font-family:‘JetBrains Mono’,monospace;font-size:.88rem}
+table td,table th{border:1px solid var(–rule);padding:.4rem .8rem;text-align:center}
+table th{background:var(–bg-3);color:var(–amber);font-weight:500;text-transform:uppercase;letter-spacing:1px;font-size:.7rem}
+
+.muted{color:var(–ink-dim);font-style:italic;font-size:.95rem}
+
+/* Mark for hover-reveal answers */
+details{margin:.5rem 0}
+details summary{cursor:pointer;color:var(–amber);font-family:‘JetBrains Mono’,monospace;font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;padding:.4rem .6rem;background:var(–bg-3);border-radius:3px;display:inline-block;list-style:none;border:1px solid var(–rule)}
+details summary:hover{background:var(–amber);color:var(–bg)}
+details summary::-webkit-details-marker{display:none}
+details[open] summary{margin-bottom:.6rem}
+details > div{padding:.6rem 1rem;background:var(–bg-3);border-radius:3px;border-left:2px solid var(–amber)}
+
+/* Footer */
+footer{margin-top:6rem;padding-top:2rem;border-top:1px solid var(–rule);color:var(–ink-mute);font-size:.85rem;text-align:center;font-style:italic}
+
+/* The end */
+.flourish{text-align:center;color:var(–amber);font-size:1.5rem;margin:3rem 0;letter-spacing:1rem}
+</style>
+
+</head>
+<body>
+
+<div class="shell">
+
+<nav class="toc">
+  <h1>Cryptographer's<br>Notebook</h1>
+  <div class="subtitle">EECE 632 · Final Prep</div>
+  <div class="countdown" id="countdown">Exam: <b>Tue, May 12</b><br>Days remaining: <b id="days">—</b></div>
+
+  <div class="group-label">Foundations · Ch 8</div>
+  <ol>
+    <li><a href="#crt">Chinese Remainder Thm</a></li>
+    <li><a href="#fermat">Fermat's Little Theorem</a></li>
+    <li><a href="#euler">Euler's Theorem</a></li>
+    <li><a href="#phi">Euler's Totient φ(n)</a></li>
+    <li><a href="#miller">Miller-Rabin Test</a></li>
+    <li><a href="#fastexp">Fast Exponentiation</a></li>
+  </ol>
+
+  <div class="group-label">Public Key · Ch 9</div>
+  <ol start="7">
+    <li><a href="#rsa">RSA Encrypt / Decrypt</a></li>
+    <li><a href="#rsa-attack">RSA Chosen-Ciphertext</a></li>
+  </ol>
+
+  <div class="group-label">Other PK · Ch 10</div>
+  <ol start="9">
+    <li><a href="#dh">Diffie-Hellman</a></li>
+    <li><a href="#elgamal">ElGamal</a></li>
+    <li><a href="#ecc">Elliptic Curves</a></li>
+    <li><a href="#ecc-enc">ECC Encryption</a></li>
+  </ol>
+
+  <div class="group-label">Symmetric · Ch 6 / AES</div>
+  <ol start="13">
+    <li><a href="#modes">Block Cipher Modes</a></li>
+    <li><a href="#aes-round">AES First Round</a></li>
+    <li><a href="#aes-keyexp">AES Key Expansion</a></li>
+  </ol>
+
+  <div class="group-label">Auth & Hash · Ch 11–13</div>
+  <ol start="16">
+    <li><a href="#hash">Hash & MAC</a></li>
+    <li><a href="#schnorr">Schnorr ZKP</a></li>
+    <li><a href="#concepts">Problem 1 Cheatsheet</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<div class="intro">
+  <div class="eyebrow">A 5-day forced march · ranked by exam recurrence</div>
+  <h1>Every problem the<br>professor will <em>likely</em> ask.</h1>
+  <p>Theory · Worked example · Practice. No theory you don't need. No fluff.</p>
+</div>
+
+<!-- ============================================================ -->
+
+<!--                    01 · CRT                                   -->
+
+<!-- ============================================================ -->
+
+<section id="crt">
+  <div class="num">§01 · Number Theory</div>
+  <h2>Chinese Remainder Theorem</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Solve a system of congruences <code>x ≡ a_i mod m_i</code> when the <code>m_i</code> are pairwise coprime.</p>
+
+  <div class="method">
+    <h3>The Procedure</h3>
+    <ol>
+      <li>Let $M = m_1 \cdot m_2 \cdots m_k$.</li>
+      <li>For each $i$: compute $M_i = M/m_i$.</li>
+      <li>For each $i$: find $y_i = M_i^{-1} \bmod m_i$ (the modular inverse).</li>
+      <li>Answer: $x = \sum_i a_i \cdot M_i \cdot y_i \bmod M$.</li>
+    </ol>
+    <p class="muted">Finding $M_i^{-1} \bmod m_i$: just try small numbers $y$ until $M_i \cdot y \equiv 1 \pmod{m_i}$. With small moduli (5, 7, 11), this takes seconds.</p>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2019</h3>
+    <div class="qbox">Solve: $x \equiv 1 \pmod 5,\ x \equiv 3 \pmod 7,\ x \equiv 1 \pmod{11}$.</div>
+    <div class="step"><b>1.</b> $M = 5 \cdot 7 \cdot 11 = 385$.</div>
+    <div class="step"><b>2.</b> $M_1 = 385/5 = 77$, $M_2 = 385/7 = 55$, $M_3 = 385/11 = 35$.</div>
+    <div class="step"><b>3.</b> Inverses:
+      <ul>
+        <li>$77 \bmod 5 = 2$. Need $2y_1 \equiv 1 \pmod 5$ → $y_1 = 3$ (since $2 \cdot 3 = 6 \equiv 1$).</li>
+        <li>$55 \bmod 7 = 6$. Need $6y_2 \equiv 1 \pmod 7$ → $y_2 = 6$ (since $6 \cdot 6 = 36 \equiv 1$).</li>
+        <li>$35 \bmod 11 = 2$. Need $2y_3 \equiv 1 \pmod{11}$ → $y_3 = 6$ (since $2 \cdot 6 = 12 \equiv 1$).</li>
+      </ul>
+    </div>
+    <div class="step"><b>4.</b> $x = 1 \cdot 77 \cdot 3 + 3 \cdot 55 \cdot 6 + 1 \cdot 35 \cdot 6 = 231 + 990 + 210 = 1431$.</div>
+    <div class="step"><b>5.</b> $x = 1431 \bmod 385 = 1431 - 3 \cdot 385 = 1431 - 1155 = 276$.</div>
+    <div class="ans">Answer: x = 276</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Solve: $x \equiv 2 \pmod 7,\ x \equiv 3 \pmod 9$. <span class="muted">(from FA08)</span></div>
+    <div class="input-row">
+      x =&nbsp;<input type="text" id="ans-crt-1" placeholder="enter integer">
+      <button onclick="check('crt-1','30')">Check</button>
+      <button class="solve" onclick="toggle('sol-crt-1')">Show solution</button>
+      <span class="verdict" id="ver-crt-1"></span>
+    </div>
+    <div class="solution" id="sol-crt-1">
+      <div class="step"><b>1.</b> $M = 7 \cdot 9 = 63$. $M_1 = 9$, $M_2 = 7$.</div>
+      <div class="step"><b>2.</b> $9 \bmod 7 = 2$ → $2y_1 \equiv 1 \pmod 7$ → $y_1 = 4$ (since $8 \equiv 1$).</div>
+      <div class="step"><b>3.</b> $7 \bmod 9 = 7$ → $7y_2 \equiv 1 \pmod 9$ → $y_2 = 4$ (since $28 = 27+1 \equiv 1$).</div>
+      <div class="step"><b>4.</b> $x = 2 \cdot 9 \cdot 4 + 3 \cdot 7 \cdot 4 = 72 + 84 = 156$.</div>
+      <div class="step"><b>5.</b> $156 \bmod 63 = 156 - 2 \cdot 63 = 30$.</div>
+      <div class="ans">x = 30. Verify: 30 mod 7 = 2 ✓, 30 mod 9 = 3 ✓.</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> Solve: $x \equiv 2 \pmod 3,\ x \equiv 2 \pmod 7$. <span class="muted">(from FA12)</span></div>
+<div class="input-row">
+  x =&nbsp;<input type="text" id="ans-crt-2" placeholder="enter integer">
+  <button onclick="check('crt-2','2')">Check</button>
+  <button class="solve" onclick="toggle('sol-crt-2')">Show solution</button>
+  <span class="verdict" id="ver-crt-2"></span>
+</div>
+<div class="solution" id="sol-crt-2">
+  <div class="step">Trick: both residues are 2, so $x = 2$ works directly. (2 mod 3 = 2, 2 mod 7 = 2.) Smallest non-trivial answer: $x = 2$ or $x = 2 + 21 = 23$ (next solution). The professor accepts either.</div>
+  <div class="ans">x = 2 (mod 21)</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> Solve: $x \equiv 1 \pmod 2,\ x \equiv 2 \pmod 5,\ x \equiv 3 \pmod 7$.</div>
+<div class="input-row">
+  x =&nbsp;<input type="text" id="ans-crt-3" placeholder="enter integer">
+  <button onclick="check('crt-3','17')">Check</button>
+  <button class="solve" onclick="toggle('sol-crt-3')">Show solution</button>
+  <span class="verdict" id="ver-crt-3"></span>
+</div>
+<div class="solution" id="sol-crt-3">
+  <div class="step"><b>1.</b> $M = 2 \cdot 5 \cdot 7 = 70$. $M_1 = 35$, $M_2 = 14$, $M_3 = 10$.</div>
+  <div class="step"><b>2.</b> Inverses:
+    <ul>
+      <li>$35 \bmod 2 = 1$. $1 \cdot y_1 \equiv 1$ → $y_1 = 1$.</li>
+      <li>$14 \bmod 5 = 4$. $4 y_2 \equiv 1 \pmod 5$ → $y_2 = 4$ (since $16 \equiv 1$).</li>
+      <li>$10 \bmod 7 = 3$. $3 y_3 \equiv 1 \pmod 7$ → $y_3 = 5$ (since $15 \equiv 1$).</li>
+    </ul>
+  </div>
+  <div class="step"><b>3.</b> $x = 1\cdot 35\cdot 1 + 2\cdot 14\cdot 4 + 3\cdot 10\cdot 5 = 35 + 112 + 150 = 297$.</div>
+  <div class="step"><b>4.</b> $297 \bmod 70 = 297 - 4\cdot 70 = 17$.</div>
+  <div class="ans">x = 17. (Check: 17 mod 2=1 ✓, 17 mod 5=2 ✓, 17 mod 7=3 ✓)</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> Solve: $x \equiv 3 \pmod 5,\ x \equiv 5 \pmod 7$.</div>
+<div class="input-row">
+  x =&nbsp;<input type="text" id="ans-crt-4" placeholder="enter integer">
+  <button onclick="check('crt-4','33')">Check</button>
+  <button class="solve" onclick="toggle('sol-crt-4')">Show solution</button>
+  <span class="verdict" id="ver-crt-4"></span>
+</div>
+<div class="solution" id="sol-crt-4">
+  <div class="step"><b>1.</b> $M = 35$. $M_1 = 7$, $M_2 = 5$.</div>
+  <div class="step"><b>2.</b> $7 \bmod 5 = 2$. $2 y_1 \equiv 1 \pmod 5$ → $y_1 = 3$.</div>
+  <div class="step"><b>3.</b> $5 \bmod 7 = 5$. $5 y_2 \equiv 1 \pmod 7$ → $y_2 = 3$ (since $15 \equiv 1$).</div>
+  <div class="step"><b>4.</b> $x = 3 \cdot 7 \cdot 3 + 5 \cdot 5 \cdot 3 = 63 + 75 = 138$.</div>
+  <div class="step"><b>5.</b> $138 \bmod 35 = 138 - 3\cdot 35 = 33$.</div>
+  <div class="ans">x = 33</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Solve: $x \equiv 1 \pmod 4,\ x \equiv 2 \pmod 3,\ x \equiv 3 \pmod 5$.</div>
+<div class="input-row">
+  x =&nbsp;<input type="text" id="ans-crt-5" placeholder="enter integer">
+  <button onclick="check('crt-5','53')">Check</button>
+  <button class="solve" onclick="toggle('sol-crt-5')">Show solution</button>
+  <span class="verdict" id="ver-crt-5"></span>
+</div>
+<div class="solution" id="sol-crt-5">
+  <div class="step"><b>1.</b> $M = 4\cdot 3\cdot 5 = 60$. $M_1=15, M_2=20, M_3=12$.</div>
+  <div class="step"><b>2.</b> $15 \bmod 4 = 3$. $3 y_1 \equiv 1 \pmod 4$ → $y_1 = 3$ (since $9 \equiv 1$).</div>
+  <div class="step"><b>3.</b> $20 \bmod 3 = 2$. $2 y_2 \equiv 1 \pmod 3$ → $y_2 = 2$.</div>
+  <div class="step"><b>4.</b> $12 \bmod 5 = 2$. $2 y_3 \equiv 1 \pmod 5$ → $y_3 = 3$.</div>
+  <div class="step"><b>5.</b> $x = 1\cdot 15\cdot 3 + 2\cdot 20\cdot 2 + 3\cdot 12\cdot 3 = 45 + 80 + 108 = 233$.</div>
+  <div class="step"><b>6.</b> $233 \bmod 60 = 233 - 3\cdot 60 = 53$.</div>
+  <div class="ans">x = 53. (Check: 53 mod 4=1 ✓, 53 mod 3=2 ✓, 53 mod 5=3 ✓)</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    02 · FERMAT                                -->
+
+<!-- ============================================================ -->
+
+<section id="fermat">
+  <div class="num">§02 · Number Theory</div>
+  <h2>Fermat's Little Theorem</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Compute $a^{\text{big}} \bmod p$ when $p$ is <strong>prime</strong> and $\gcd(a,p)=1$.</p>
+
+  <div class="method">
+    <h3>The Theorem</h3>
+    <p>If $p$ is prime and $p \nmid a$, then $a^{p-1} \equiv 1 \pmod p$.</p>
+    <h3>The Procedure</h3>
+    <ol>
+      <li>Confirm $p$ is prime, $\gcd(a,p)=1$.</li>
+      <li>Divide the exponent: write $\text{exp} = (p-1) \cdot q + r$ where $0 \le r < p-1$.</li>
+      <li>Then $a^{\text{exp}} = (a^{p-1})^q \cdot a^r \equiv 1^q \cdot a^r \equiv a^r \pmod p$.</li>
+      <li>Compute $a^r \bmod p$ directly.</li>
+    </ol>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2019 / Fall 2008</h3>
+    <div class="qbox">Find $3^{675} \bmod 13$ using Fermat's theorem.</div>
+    <div class="step"><b>1.</b> 13 is prime, $\gcd(3,13) = 1$. ✓</div>
+    <div class="step"><b>2.</b> $p - 1 = 12$. Divide: $675 = 12 \cdot 56 + 3$. So remainder $r = 3$.</div>
+    <div class="step"><b>3.</b> $3^{675} \equiv 3^3 \pmod{13}$.</div>
+    <div class="step"><b>4.</b> $3^3 = 27 = 2 \cdot 13 + 1 \equiv 1 \pmod{13}$.</div>
+    <div class="ans">Answer: 1 (the exam answer key wrote "27" — same thing, just unreduced)</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Find $7^{222} \bmod 11$.</div>
+    <div class="input-row">
+      result =&nbsp;<input type="text" id="ans-fermat-1" placeholder="enter integer">
+      <button onclick="check('fermat-1','5')">Check</button>
+      <button class="solve" onclick="toggle('sol-fermat-1')">Show solution</button>
+      <span class="verdict" id="ver-fermat-1"></span>
+    </div>
+    <div class="solution" id="sol-fermat-1">
+      <div class="step"><b>1.</b> 11 prime, gcd(7,11)=1. $p-1 = 10$.</div>
+      <div class="step"><b>2.</b> $222 = 10 \cdot 22 + 2$. So $7^{222} \equiv 7^2 \pmod{11}$.</div>
+      <div class="step"><b>3.</b> $7^2 = 49 = 4 \cdot 11 + 5 \equiv 5 \pmod{11}$.</div>
+      <div class="ans">Answer: 5</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> Find $2^{500} \bmod 17$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-fermat-2" placeholder="enter integer">
+  <button onclick="check('fermat-2','16')">Check</button>
+  <button class="solve" onclick="toggle('sol-fermat-2')">Show solution</button>
+  <span class="verdict" id="ver-fermat-2"></span>
+</div>
+<div class="solution" id="sol-fermat-2">
+  <div class="step"><b>1.</b> 17 prime, $p-1=16$. $500 = 16 \cdot 31 + 4$. So $2^{500} \equiv 2^4 = 16 \pmod{17}$.</div>
+  <div class="ans">Answer: 16</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> Find $5^{100} \bmod 7$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-fermat-3" placeholder="enter integer">
+  <button onclick="check('fermat-3','2')">Check</button>
+  <button class="solve" onclick="toggle('sol-fermat-3')">Show solution</button>
+  <span class="verdict" id="ver-fermat-3"></span>
+</div>
+<div class="solution" id="sol-fermat-3">
+  <div class="step"><b>1.</b> 7 prime, $p-1=6$. $100 = 6 \cdot 16 + 4$. So $5^{100} \equiv 5^4 \pmod 7$.</div>
+  <div class="step"><b>2.</b> $5^2 = 25 \equiv 4 \pmod 7$. $5^4 = (5^2)^2 = 16 \equiv 2 \pmod 7$.</div>
+  <div class="ans">Answer: 2</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> Find $4^{200} \bmod 11$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-fermat-4" placeholder="enter integer">
+  <button onclick="check('fermat-4','1')">Check</button>
+  <button class="solve" onclick="toggle('sol-fermat-4')">Show solution</button>
+  <span class="verdict" id="ver-fermat-4"></span>
+</div>
+<div class="solution" id="sol-fermat-4">
+  <div class="step"><b>1.</b> $p-1 = 10$. $200 = 10 \cdot 20 + 0$. Remainder is 0!</div>
+  <div class="step"><b>2.</b> $4^{200} = (4^{10})^{20} \equiv 1^{20} = 1 \pmod{11}$.</div>
+  <div class="ans">Answer: 1. <em>Note: when remainder is 0, the answer is always 1.</em></div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Find $6^{123} \bmod 17$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-fermat-5" placeholder="enter integer">
+  <button onclick="check('fermat-5','5')">Check</button>
+  <button class="solve" onclick="toggle('sol-fermat-5')">Show solution</button>
+  <span class="verdict" id="ver-fermat-5"></span>
+</div>
+<div class="solution" id="sol-fermat-5">
+  <div class="step"><b>1.</b> $p-1=16$. $123 = 16 \cdot 7 + 11$. So $6^{123} \equiv 6^{11} \pmod{17}$.</div>
+  <div class="step"><b>2.</b> Compute $6^{11}$ via squaring:
+    <ul>
+      <li>$6^2 = 36 \equiv 2$</li>
+      <li>$6^4 = 2^2 = 4$</li>
+      <li>$6^8 = 4^2 = 16 \equiv -1$</li>
+      <li>$6^{11} = 6^8 \cdot 6^2 \cdot 6 = (-1)(2)(6) = -12 \equiv 5 \pmod{17}$.</li>
+    </ul>
+  </div>
+  <div class="ans">Answer: 5</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    03 · EULER                                 -->
+
+<!-- ============================================================ -->
+
+<section id="euler">
+  <div class="num">§03 · Number Theory</div>
+  <h2>Euler's Theorem</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Generalisation of Fermat for any modulus $n$ when $\gcd(a,n)=1$.</p>
+
+  <div class="method">
+    <h3>The Theorem</h3>
+    <p>If $\gcd(a,n) = 1$, then $a^{\varphi(n)} \equiv 1 \pmod n$.</p>
+    <h3>The Procedure</h3>
+    <ol>
+      <li>Compute $\varphi(n)$ (see §04).</li>
+      <li>Confirm $\gcd(a,n) = 1$.</li>
+      <li>Divide: $\text{exp} = \varphi(n) \cdot q + r$.</li>
+      <li>$a^{\text{exp}} \equiv a^r \pmod n$. Compute.</li>
+    </ol>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2019</h3>
+    <div class="qbox">Find $7^{483} \bmod 9$.</div>
+    <div class="step"><b>1.</b> $9 = 3^2$, so $\varphi(9) = 9 - 3 = 6$.</div>
+    <div class="step"><b>2.</b> $\gcd(7,9) = 1$. ✓</div>
+    <div class="step"><b>3.</b> $483 = 6 \cdot 80 + 3$. So $7^{483} \equiv 7^3 \pmod 9$.</div>
+    <div class="step"><b>4.</b> $7^3 = 343 = 38 \cdot 9 + 1 \equiv 1 \pmod 9$.</div>
+    <div class="ans">Answer: 1</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Find $97^{63} \bmod 10$. <span class="muted">(from FA12 — note 10 is not prime, must use Euler not Fermat)</span></div>
+    <div class="input-row">
+      result =&nbsp;<input type="text" id="ans-euler-1" placeholder="enter integer">
+      <button onclick="check('euler-1','3')">Check</button>
+      <button class="solve" onclick="toggle('sol-euler-1')">Show solution</button>
+      <span class="verdict" id="ver-euler-1"></span>
+    </div>
+    <div class="solution" id="sol-euler-1">
+      <div class="step"><b>1.</b> $\varphi(10) = \varphi(2) \cdot \varphi(5) = 1 \cdot 4 = 4$.</div>
+      <div class="step"><b>2.</b> $\gcd(97,10) = 1$. ✓</div>
+      <div class="step"><b>3.</b> $63 = 4 \cdot 15 + 3$. So $97^{63} \equiv 97^3 \pmod{10}$.</div>
+      <div class="step"><b>4.</b> $97 \equiv 7 \pmod{10}$, so $97^3 \equiv 7^3 = 343 \equiv 3 \pmod{10}$.</div>
+      <div class="ans">Answer: 3</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> Find $3^{100} \bmod 14$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-euler-2" placeholder="enter integer">
+  <button onclick="check('euler-2','11')">Check</button>
+  <button class="solve" onclick="toggle('sol-euler-2')">Show solution</button>
+  <span class="verdict" id="ver-euler-2"></span>
+</div>
+<div class="solution" id="sol-euler-2">
+  <div class="step"><b>1.</b> $14 = 2 \cdot 7$. $\varphi(14) = 1 \cdot 6 = 6$.</div>
+  <div class="step"><b>2.</b> $\gcd(3,14)=1$ ✓. $100 = 6 \cdot 16 + 4$. So $3^{100} \equiv 3^4 \pmod{14}$.</div>
+  <div class="step"><b>3.</b> $3^4 = 81 = 5 \cdot 14 + 11 \equiv 11 \pmod{14}$.</div>
+  <div class="ans">Answer: 11</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> Find $7^{222} \bmod 15$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-euler-3" placeholder="enter integer">
+  <button onclick="check('euler-3','4')">Check</button>
+  <button class="solve" onclick="toggle('sol-euler-3')">Show solution</button>
+  <span class="verdict" id="ver-euler-3"></span>
+</div>
+<div class="solution" id="sol-euler-3">
+  <div class="step"><b>1.</b> $15 = 3 \cdot 5$. $\varphi(15) = 2 \cdot 4 = 8$.</div>
+  <div class="step"><b>2.</b> $\gcd(7,15)=1$ ✓. $222 = 8 \cdot 27 + 6$. So $7^{222} \equiv 7^6 \pmod{15}$.</div>
+  <div class="step"><b>3.</b> $7^2 = 49 \equiv 4$. $7^4 = 16 \equiv 1$. $7^6 = 7^4 \cdot 7^2 = 1 \cdot 4 = 4$.</div>
+  <div class="ans">Answer: 4</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> Find $5^{150} \bmod 21$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-euler-4" placeholder="enter integer">
+  <button onclick="check('euler-4','1')">Check</button>
+  <button class="solve" onclick="toggle('sol-euler-4')">Show solution</button>
+  <span class="verdict" id="ver-euler-4"></span>
+</div>
+<div class="solution" id="sol-euler-4">
+  <div class="step"><b>1.</b> $21 = 3 \cdot 7$. $\varphi(21) = 2 \cdot 6 = 12$.</div>
+  <div class="step"><b>2.</b> $\gcd(5,21)=1$ ✓. $150 = 12 \cdot 12 + 6$. So $5^{150} \equiv 5^6 \pmod{21}$.</div>
+  <div class="step"><b>3.</b> $5^2 = 25 \equiv 4$. $5^4 = 16$. $5^6 = 5^4 \cdot 5^2 = 16 \cdot 4 = 64 = 3 \cdot 21 + 1 \equiv 1$.</div>
+  <div class="ans">Answer: 1</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Find $11^{500} \bmod 12$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-euler-5" placeholder="enter integer">
+  <button onclick="check('euler-5','1')">Check</button>
+  <button class="solve" onclick="toggle('sol-euler-5')">Show solution</button>
+  <span class="verdict" id="ver-euler-5"></span>
+</div>
+<div class="solution" id="sol-euler-5">
+  <div class="step"><b>1.</b> $\gcd(11, 12) = 1$ ✓. $\varphi(12) = \varphi(4)\varphi(3) = 2 \cdot 2 = 4$.</div>
+  <div class="step"><b>2.</b> $500 = 4 \cdot 125 + 0$. Remainder 0 → answer is 1.</div>
+  <div class="step"><b>3.</b> Sanity: $11 \equiv -1 \pmod{12}$, so $11^{500} = (-1)^{500} = 1$. ✓</div>
+  <div class="ans">Answer: 1</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    04 · PHI                                   -->
+
+<!-- ============================================================ -->
+
+<section id="phi">
+  <div class="num">§04 · Number Theory</div>
+  <h2>Euler's Totient φ(n)</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Number of integers in [1, n] coprime to $n$.</p>
+
+  <div class="method">
+    <h3>The Two Rules</h3>
+    <ul>
+      <li>If $p$ is prime: $\varphi(p^k) = p^k - p^{k-1}$.</li>
+      <li>If $\gcd(m,n)=1$: $\varphi(mn) = \varphi(m)\varphi(n)$.</li>
+    </ul>
+    <h3>The Procedure</h3>
+    <ol>
+      <li>Factor $n$ into prime powers: $n = p_1^{e_1} \cdot p_2^{e_2} \cdots$.</li>
+      <li>Compute each $\varphi(p_i^{e_i}) = p_i^{e_i} - p_i^{e_i - 1}$.</li>
+      <li>Multiply them all together.</li>
+    </ol>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2019</h3>
+    <div class="qbox">Find $\varphi(35840)$.</div>
+    <div class="step"><b>1.</b> Factor: $35840 = 2^{10} \cdot 5 \cdot 7$.</div>
+    <div class="step"><b>2.</b> $\varphi(2^{10}) = 2^{10} - 2^9 = 1024 - 512 = 512$.</div>
+    <div class="step"><b>3.</b> $\varphi(5) = 4$, $\varphi(7) = 6$.</div>
+    <div class="step"><b>4.</b> $\varphi(35840) = 512 \cdot 4 \cdot 6 = 12{,}288$.</div>
+    <div class="ans">Answer: 12,288</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Find $\varphi(560)$. <span class="muted">(from FA08)</span></div>
+    <div class="input-row">
+      φ(560) =&nbsp;<input type="text" id="ans-phi-1" placeholder="enter integer">
+      <button onclick="check('phi-1','192')">Check</button>
+      <button class="solve" onclick="toggle('sol-phi-1')">Show solution</button>
+      <span class="verdict" id="ver-phi-1"></span>
+    </div>
+    <div class="solution" id="sol-phi-1">
+      <div class="step"><b>1.</b> $560 = 2^4 \cdot 5 \cdot 7$.</div>
+      <div class="step"><b>2.</b> $\varphi(2^4) = 16 - 8 = 8$. $\varphi(5) = 4$. $\varphi(7) = 6$.</div>
+      <div class="step"><b>3.</b> $\varphi(560) = 8 \cdot 4 \cdot 6 = 192$.</div>
+      <div class="ans">Answer: 192</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> Find $\varphi(13125)$. <span class="muted">(from FA12)</span></div>
+<div class="input-row">
+  φ(13125) =&nbsp;<input type="text" id="ans-phi-2" placeholder="enter integer">
+  <button onclick="check('phi-2','6000')">Check</button>
+  <button class="solve" onclick="toggle('sol-phi-2')">Show solution</button>
+  <span class="verdict" id="ver-phi-2"></span>
+</div>
+<div class="solution" id="sol-phi-2">
+  <div class="step"><b>1.</b> $13125 = 3 \cdot 5^4 \cdot 7$. (Check: $3 \cdot 625 = 1875$, $1875 \cdot 7 = 13125$ ✓)</div>
+  <div class="step"><b>2.</b> $\varphi(3) = 2$. $\varphi(5^4) = 625 - 125 = 500$. $\varphi(7) = 6$.</div>
+  <div class="step"><b>3.</b> $\varphi(13125) = 2 \cdot 500 \cdot 6 = 6000$.</div>
+  <div class="ans">Answer: 6000</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> Find $\varphi(72)$.</div>
+<div class="input-row">
+  φ(72) =&nbsp;<input type="text" id="ans-phi-3" placeholder="integer">
+  <button onclick="check('phi-3','24')">Check</button>
+  <button class="solve" onclick="toggle('sol-phi-3')">Show solution</button>
+  <span class="verdict" id="ver-phi-3"></span>
+</div>
+<div class="solution" id="sol-phi-3">
+  <div class="step"><b>1.</b> $72 = 2^3 \cdot 3^2$.</div>
+  <div class="step"><b>2.</b> $\varphi(2^3) = 8 - 4 = 4$. $\varphi(3^2) = 9 - 3 = 6$.</div>
+  <div class="step"><b>3.</b> $\varphi(72) = 4 \cdot 6 = 24$.</div>
+  <div class="ans">Answer: 24</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> Find $\varphi(1000)$.</div>
+<div class="input-row">
+  φ(1000) =&nbsp;<input type="text" id="ans-phi-4" placeholder="integer">
+  <button onclick="check('phi-4','400')">Check</button>
+  <button class="solve" onclick="toggle('sol-phi-4')">Show solution</button>
+  <span class="verdict" id="ver-phi-4"></span>
+</div>
+<div class="solution" id="sol-phi-4">
+  <div class="step"><b>1.</b> $1000 = 2^3 \cdot 5^3$.</div>
+  <div class="step"><b>2.</b> $\varphi(2^3) = 8 - 4 = 4$. $\varphi(5^3) = 125 - 25 = 100$.</div>
+  <div class="step"><b>3.</b> $\varphi(1000) = 4 \cdot 100 = 400$.</div>
+  <div class="ans">Answer: 400</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Find $\varphi(2401)$.</div>
+<div class="input-row">
+  φ(2401) =&nbsp;<input type="text" id="ans-phi-5" placeholder="integer">
+  <button onclick="check('phi-5','2058')">Check</button>
+  <button class="solve" onclick="toggle('sol-phi-5')">Show solution</button>
+  <span class="verdict" id="ver-phi-5"></span>
+</div>
+<div class="solution" id="sol-phi-5">
+  <div class="step"><b>1.</b> $2401 = 7^4$ (since $7^2 = 49$, $49^2 = 2401$).</div>
+  <div class="step"><b>2.</b> $\varphi(7^4) = 7^4 - 7^3 = 2401 - 343 = 2058$.</div>
+  <div class="ans">Answer: 2058</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    05 · MILLER-RABIN                          -->
+
+<!-- ============================================================ -->
+
+<section id="miller">
+  <div class="num">§05 · Number Theory</div>
+  <h2>Miller-Rabin Primality Test</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Probabilistic prime test. Comes in two flavors: count iterations for desired error, or run the test on a small number.</p>
+
+  <div class="method">
+    <h3>Error Calculation (Easiest version of the question)</h3>
+    <p>Each iteration has at most $1/4$ chance of falsely declaring a composite "prime". After $t$ iterations, error $\le (1/4)^t$.</p>
+    <p>If asked: "How many iterations for error $\le 1/2^k$?" — solve $(1/4)^t = 1/2^k$ → $t = k/2$.</p>
+    <p>Examples: error 1/16 → t=2; error 1/64 → t=3; error 1/1024 → t=5.</p>
+
+```
+<h3>Running the Test on a Number $n$</h3>
+<ol>
+  <li>Write $n - 1 = 2^k \cdot q$ with $q$ odd.</li>
+  <li>Pick random witness $a$ with $1 < a < n - 1$.</li>
+  <li>Compute $a^q \bmod n$. If $\equiv 1$ or $\equiv -1 \pmod n$ → "probably prime", stop.</li>
+  <li>Otherwise: square repeatedly. Compute $a^{2q}, a^{4q}, \ldots, a^{2^{k-1}q}$ all mod $n$.</li>
+  <li>If any is $\equiv -1 \pmod n$ → "probably prime". If you finish the chain without seeing $-1$ → <strong>composite</strong>.</li>
+</ol>
+```
+
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2019</h3>
+    <div class="qbox">How many iterations should the primality test be repeated to get error $\le 1/1024$?</div>
+    <div class="step"><b>1.</b> $1024 = 2^{10}$. Need $(1/4)^t \le 1/2^{10}$.</div>
+    <div class="step"><b>2.</b> $(1/4)^t = 1/2^{2t}$. So $2t = 10$ → $t = 5$.</div>
+    <div class="ans">Answer: t = 5</div>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Run the test (Fall 2008)</h3>
+    <div class="qbox">Show that 33 is composite using Miller-Rabin with $a = 2$.</div>
+    <div class="step"><b>1.</b> $n - 1 = 32 = 2^5 \cdot 1$. So $k = 5$, $q = 1$.</div>
+    <div class="step"><b>2.</b> Compute $a^q = 2^1 = 2$. Not $\pm 1 \pmod{33}$.</div>
+    <div class="step"><b>3.</b> Square: $2^2 = 4$. Not $\pm 1$. $4^2 = 16$. Not $\pm 1$. $16^2 = 256 = 7 \cdot 33 + 25 \equiv 25 \pmod{33}$. Not $\pm 1$. $25^2 = 625 = 18 \cdot 33 + 31 \equiv 31 \equiv -2 \pmod{33}$. Not $\pm 1$.</div>
+    <div class="step"><b>4.</b> Sequence never hit $-1$ → <strong>33 is composite</strong>.</div>
+    <div class="ans">33 is composite. (Sanity: 33 = 3 · 11.)</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> How many iterations are needed for an error of order $1/16$?</div>
+    <div class="input-row">
+      t =&nbsp;<input type="text" id="ans-miller-1" placeholder="integer">
+      <button onclick="check('miller-1','2')">Check</button>
+      <button class="solve" onclick="toggle('sol-miller-1')">Show solution</button>
+      <span class="verdict" id="ver-miller-1"></span>
+    </div>
+    <div class="solution" id="sol-miller-1">
+      <div class="step">$(1/4)^t = 1/16 = 1/4^2$ → $t = 2$.</div>
+      <div class="ans">t = 2</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> How many iterations for error $\le 1/256$?</div>
+<div class="input-row">
+  t =&nbsp;<input type="text" id="ans-miller-2" placeholder="integer">
+  <button onclick="check('miller-2','4')">Check</button>
+  <button class="solve" onclick="toggle('sol-miller-2')">Show solution</button>
+  <span class="verdict" id="ver-miller-2"></span>
+</div>
+<div class="solution" id="sol-miller-2">
+  <div class="step">$256 = 2^8$, so $(1/4)^t = 1/2^8$ → $t = 4$.</div>
+  <div class="ans">t = 4</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> Demonstrate that 23 is prime via Miller-Rabin with $a = 5$. <span class="muted">(from FA12)</span> What's the value you stop at?</div>
+<details><summary>Show solution</summary><div>
+  <div class="step"><b>1.</b> $n - 1 = 22 = 2^1 \cdot 11$. So $k=1$, $q=11$.</div>
+  <div class="step"><b>2.</b> $5^{11} \bmod 23$. Compute step by step: $5^2 = 25 \equiv 2$. $5^4 \equiv 4$. $5^8 \equiv 16$. $5^{11} = 5^8 \cdot 5^2 \cdot 5 = 16 \cdot 2 \cdot 5 = 160 \equiv 160 - 6 \cdot 23 = 160 - 138 = 22 \equiv -1 \pmod{23}$.</div>
+  <div class="step"><b>3.</b> Got $-1$ on first step → "probably prime". With one good witness, error $\le 1/4$. Iterate with more $a$ values for tighter bound.</div>
+  <div class="ans">$5^{11} \equiv -1 \pmod{23}$ → 23 passes.</div>
+</div></details>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> How many iterations needed for error $\le 1/4096$?</div>
+<div class="input-row">
+  t =&nbsp;<input type="text" id="ans-miller-4" placeholder="integer">
+  <button onclick="check('miller-4','6')">Check</button>
+  <button class="solve" onclick="toggle('sol-miller-4')">Show solution</button>
+  <span class="verdict" id="ver-miller-4"></span>
+</div>
+<div class="solution" id="sol-miller-4">
+  <div class="step">$4096 = 2^{12}$. $(1/4)^t = 1/2^{12}$ → $2t = 12$ → $t = 6$.</div>
+  <div class="ans">t = 6</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> How many iterations for error $\le 1/65536$?</div>
+<div class="input-row">
+  t =&nbsp;<input type="text" id="ans-miller-5" placeholder="integer">
+  <button onclick="check('miller-5','8')">Check</button>
+  <button class="solve" onclick="toggle('sol-miller-5')">Show solution</button>
+  <span class="verdict" id="ver-miller-5"></span>
+</div>
+<div class="solution" id="sol-miller-5">
+  <div class="step">$65536 = 2^{16}$. $2t = 16$ → $t = 8$.</div>
+  <div class="ans">t = 8</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P6.</b> Show that 25 is composite using Miller-Rabin with $a = 2$.</div>
+<details><summary>Show solution</summary><div>
+  <div class="step"><b>1.</b> $n - 1 = 24 = 2^3 \cdot 3$. So $k = 3$, $q = 3$.</div>
+  <div class="step"><b>2.</b> $a^q = 2^3 = 8$. Is $8 \equiv \pm 1 \pmod{25}$? No.</div>
+  <div class="step"><b>3.</b> Square: $8^2 = 64 \equiv 14 \pmod{25}$. ±1? No.</div>
+  <div class="step"><b>4.</b> Square: $14^2 = 196 \equiv 196 - 7\cdot 25 = 21 \equiv -4 \pmod{25}$. ±1? No.</div>
+  <div class="step"><b>5.</b> Did $k - 1 = 2$ squarings, never hit $-1$ → <strong>composite</strong>. (Sanity: $25 = 5^2$.)</div>
+  <div class="ans">25 is composite.</div>
+</div></details>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    06 · FAST EXP                              -->
+
+<!-- ============================================================ -->
+
+<section id="fastexp">
+  <div class="num">§06 · Number Theory</div>
+  <h2>Fast Exponentiation (Square &amp; Multiply)</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Compute $a^b \bmod n$ when the exponent doesn't reduce nicely. <strong>Subroutine for everything below.</strong></p>
+
+  <div class="method">
+    <h3>The Procedure (Left-to-Right)</h3>
+    <ol>
+      <li>Write the exponent $b$ in <strong>binary</strong>, left-to-right.</li>
+      <li>Start with accumulator $c = 1$.</li>
+      <li>For each bit (left to right): <em>square</em> $c$, then if the bit is 1 also <em>multiply</em> by $a$. Reduce mod $n$ at every step.</li>
+    </ol>
+    <p class="muted">Make a table with one row per bit. Show every squaring and multiplication. The professor wants the <strong>steps shown</strong>.</p>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Small case</h3>
+    <div class="qbox">Compute $5^9 \bmod 11$.</div>
+    <div class="step"><b>1.</b> $9 = 1001_2$.</div>
+    <div class="step"><b>2.</b> Walk left-to-right:</div>
+    <table>
+      <tr><th>bit</th><th>1</th><th>0</th><th>0</th><th>1</th></tr>
+      <tr><th>operation</th><td>$1^2 \cdot 5 = 5$</td><td>$5^2 = 25 \equiv 3$</td><td>$3^2 = 9$</td><td>$9^2 \cdot 5 = 405 \equiv 9$</td></tr>
+      <tr><th>$c \bmod 11$</th><td>5</td><td>3</td><td>9</td><td>9</td></tr>
+    </table>
+    <div class="ans">$5^9 \equiv 9 \pmod{11}$</div>
+  </div>
+
+  <div class="example">
+    <h3>The Recurring Exam Problem · Fall 2008 / 2019</h3>
+    <div class="qbox">Compute $5^{596} \bmod 1234$.</div>
+    <div class="step"><b>1.</b> $596 = 1001010100_2$. (Check: $512+64+16+4 = 596$ ✓)</div>
+    <div class="step"><b>2.</b> Stallings exam-key result table:</div>
+    <table>
+      <tr><th>bit</th><th>1</th><th>0</th><th>0</th><th>1</th><th>0</th><th>1</th><th>0</th><th>1</th><th>0</th><th>0</th></tr>
+      <tr><th>$c$ after</th><td>5</td><td>25</td><td>625</td><td>937</td><td>594</td><td>596</td><td>453</td><td>591</td><td>59</td><td>1013</td></tr>
+    </table>
+    <div class="ans">$5^{596} \equiv 1013 \pmod{1234}$</div>
+    <p class="muted">On the exam: write out every squaring and reduction. Even if you arithmetic-error one cell, partial credit lives in the visible work.</p>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Compute $3^{13} \bmod 7$ using square-and-multiply.</div>
+    <div class="input-row">
+      result =&nbsp;<input type="text" id="ans-fastexp-1" placeholder="integer">
+      <button onclick="check('fastexp-1','3')">Check</button>
+      <button class="solve" onclick="toggle('sol-fastexp-1')">Show solution</button>
+      <span class="verdict" id="ver-fastexp-1"></span>
+    </div>
+    <div class="solution" id="sol-fastexp-1">
+      <div class="step"><b>1.</b> $13 = 1101_2$.</div>
+      <div class="step"><b>2.</b> Bits left-to-right: 1, 1, 0, 1</div>
+      <table>
+        <tr><th>bit</th><th>1</th><th>1</th><th>0</th><th>1</th></tr>
+        <tr><th>op</th><td>$1 \cdot 3 = 3$</td><td>$9 \cdot 3 = 27 \equiv 6$</td><td>$36 \equiv 1$</td><td>$1 \cdot 3 = 3$</td></tr>
+        <tr><th>c</th><td>3</td><td>6</td><td>1</td><td>3</td></tr>
+      </table>
+      <div class="ans">$3^{13} \equiv 3 \pmod 7$. (Sanity: by Fermat, $3^6 \equiv 1$, so $3^{13} = 3^{12} \cdot 3 \equiv 3$. ✓)</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> Compute $2^{11} \bmod 13$ via square-and-multiply.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-fastexp-2" placeholder="integer">
+  <button onclick="check('fastexp-2','7')">Check</button>
+  <button class="solve" onclick="toggle('sol-fastexp-2')">Show solution</button>
+  <span class="verdict" id="ver-fastexp-2"></span>
+</div>
+<div class="solution" id="sol-fastexp-2">
+  <div class="step">$11 = 1011_2$.</div>
+  <table>
+    <tr><th>bit</th><th>1</th><th>0</th><th>1</th><th>1</th></tr>
+    <tr><th>op</th><td>$1\cdot 2=2$</td><td>$4$</td><td>$16\cdot 2=32\equiv 6$</td><td>$36\cdot 2=72\equiv 7$</td></tr>
+    <tr><th>c mod 13</th><td>2</td><td>4</td><td>6</td><td>7</td></tr>
+  </table>
+  <div class="ans">$2^{11} \equiv 7 \pmod{13}$.</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> Compute $3^{15} \bmod 17$ using square-and-multiply.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-fastexp-3" placeholder="integer">
+  <button onclick="check('fastexp-3','6')">Check</button>
+  <button class="solve" onclick="toggle('sol-fastexp-3')">Show solution</button>
+  <span class="verdict" id="ver-fastexp-3"></span>
+</div>
+<div class="solution" id="sol-fastexp-3">
+  <div class="step">$15 = 1111_2$.</div>
+  <table>
+    <tr><th>bit</th><th>1</th><th>1</th><th>1</th><th>1</th></tr>
+    <tr><th>op</th><td>$1 \cdot 3 = 3$</td><td>$9 \cdot 3 = 27 \equiv 10$</td><td>$100 \cdot 3 = 300 \equiv 11$</td><td>$121 \cdot 3 = 363 \equiv 6$</td></tr>
+    <tr><th>c mod 17</th><td>3</td><td>10</td><td>11</td><td>6</td></tr>
+  </table>
+  <div class="step">Sanity: $3^{16} \equiv 1 \pmod{17}$ by Fermat, so $3^{15} \equiv 3^{-1}$. Indeed $3 \cdot 6 = 18 \equiv 1$. ✓</div>
+  <div class="ans">$3^{15} \equiv 6 \pmod{17}$.</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> Compute $6^{20} \bmod 13$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-fastexp-4" placeholder="integer">
+  <button onclick="check('fastexp-4','3')">Check</button>
+  <button class="solve" onclick="toggle('sol-fastexp-4')">Show solution</button>
+  <span class="verdict" id="ver-fastexp-4"></span>
+</div>
+<div class="solution" id="sol-fastexp-4">
+  <div class="step">$20 = 10100_2$.</div>
+  <table>
+    <tr><th>bit</th><th>1</th><th>0</th><th>1</th><th>0</th><th>0</th></tr>
+    <tr><th>op</th><td>$1 \cdot 6 = 6$</td><td>$36 \equiv 10$</td><td>$100 \cdot 6 = 600 \equiv 2$</td><td>$4$</td><td>$16 \equiv 3$</td></tr>
+    <tr><th>c mod 13</th><td>6</td><td>10</td><td>2</td><td>4</td><td>3</td></tr>
+  </table>
+  <div class="ans">$6^{20} \equiv 3 \pmod{13}$.</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Compute $7^{11} \bmod 13$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-fastexp-5" placeholder="integer">
+  <button onclick="check('fastexp-5','2')">Check</button>
+  <button class="solve" onclick="toggle('sol-fastexp-5')">Show solution</button>
+  <span class="verdict" id="ver-fastexp-5"></span>
+</div>
+<div class="solution" id="sol-fastexp-5">
+  <div class="step">$11 = 1011_2$.</div>
+  <table>
+    <tr><th>bit</th><th>1</th><th>0</th><th>1</th><th>1</th></tr>
+    <tr><th>op</th><td>$1 \cdot 7 = 7$</td><td>$49 \equiv 10$</td><td>$100 \cdot 7 = 700 \equiv 11$</td><td>$121 \cdot 7 = 847 \equiv 2$</td></tr>
+    <tr><th>c mod 13</th><td>7</td><td>10</td><td>11</td><td>2</td></tr>
+  </table>
+  <div class="step">Compute helpers: $100 \bmod 13 = 9$ (since $7\cdot 13 = 91$). $9 \cdot 7 = 63 \equiv 11$. $121 \bmod 13 = 4$ (since $9 \cdot 13 = 117$). $4 \cdot 7 = 28 \equiv 2$.</div>
+  <div class="ans">$7^{11} \equiv 2 \pmod{13}$.</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    07 · RSA                                   -->
+
+<!-- ============================================================ -->
+
+<section id="rsa">
+  <div class="num">§07 · Public Key</div>
+  <h2>RSA Encryption / Decryption</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Given $p, q, e, M$ — encrypt, then verify by decrypting.</p>
+
+  <div class="method">
+    <h3>Setup</h3>
+    <ol>
+      <li>$n = pq$.</li>
+      <li>$\varphi(n) = (p-1)(q-1)$.</li>
+      <li>Public key $e$ must satisfy $\gcd(e, \varphi(n)) = 1$.</li>
+      <li>Private key $d = e^{-1} \bmod \varphi(n)$ (find by extended Euclidean or trial).</li>
+    </ol>
+    <h3>Encrypt &amp; Decrypt</h3>
+    <ul>
+      <li>Encrypt: $C = M^e \bmod n$.</li>
+      <li>Decrypt: $M = C^d \bmod n$.</li>
+    </ul>
+    <p class="muted">Tip: For exam-sized problems, find $d$ by inspection. Test small multiples: $1 \cdot e, 2 \cdot e, 3 \cdot e, \ldots$ until one is $\equiv 1 \pmod{\varphi(n)}$.</p>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2008 (Chehab's favorite numbers)</h3>
+    <div class="qbox">$p=5, q=13, e=5, M=6$. Encrypt and verify decryption.</div>
+    <div class="step"><b>1.</b> $n = 5 \cdot 13 = 65$. $\varphi(n) = 4 \cdot 12 = 48$.</div>
+    <div class="step"><b>2.</b> $\gcd(5,48) = 1$ ✓. Find $d$: $5d \equiv 1 \pmod{48}$. Trial: $5\cdot 29 = 145 = 3 \cdot 48 + 1$. So $d = 29$.</div>
+    <div class="step"><b>3.</b> Encrypt: $C = 6^5 \bmod 65$. $6^2 = 36$. $6^4 = 36^2 = 1296 \equiv 61$ (since $1296 - 19 \cdot 65 = 1296 - 1235 = 61$). $6^5 = 61 \cdot 6 = 366 \equiv 41 \pmod{65}$.</div>
+    <div class="step"><b>4.</b> Decrypt: $M = 41^{29} \bmod 65$. Use square-and-multiply ($29 = 11101_2$). After all steps you get back $6$. ✓</div>
+    <div class="ans">C = 41. Decryption recovers M = 6.</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> $p=3, q=11, e=7, M=5$. Find the ciphertext $C$.</div>
+    <div class="input-row">
+      C =&nbsp;<input type="text" id="ans-rsa-1" placeholder="integer">
+      <button onclick="check('rsa-1','14')">Check</button>
+      <button class="solve" onclick="toggle('sol-rsa-1')">Show solution</button>
+      <span class="verdict" id="ver-rsa-1"></span>
+    </div>
+    <div class="solution" id="sol-rsa-1">
+      <div class="step"><b>1.</b> $n = 33$. $\varphi(n) = 2 \cdot 10 = 20$. $\gcd(7,20)=1$ ✓.</div>
+      <div class="step"><b>2.</b> $C = 5^7 \bmod 33$. $5^2 = 25$. $5^4 = 625 \equiv 625 - 18 \cdot 33 = 625 - 594 = 31$. $5^7 = 5^4 \cdot 5^2 \cdot 5 = 31 \cdot 25 \cdot 5$. $31 \cdot 25 = 775 \equiv 775 - 23\cdot 33 = 775 - 759 = 16$. $16 \cdot 5 = 80 \equiv 80 - 2\cdot 33 = 14$.</div>
+      <div class="ans">C = 14</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> Same parameters. Find $d$.</div>
+<div class="input-row">
+  d =&nbsp;<input type="text" id="ans-rsa-2" placeholder="integer">
+  <button onclick="check('rsa-2','3')">Check</button>
+  <button class="solve" onclick="toggle('sol-rsa-2')">Show solution</button>
+  <span class="verdict" id="ver-rsa-2"></span>
+</div>
+<div class="solution" id="sol-rsa-2">
+  <div class="step">$7d \equiv 1 \pmod{20}$. Try: $7\cdot 3 = 21 \equiv 1$ ✓. $d = 3$.</div>
+  <div class="ans">d = 3</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> $p = 7, q = 11, e = 13$. Find the private key $d$.</div>
+<div class="input-row">
+  d =&nbsp;<input type="text" id="ans-rsa-3" placeholder="integer">
+  <button onclick="check('rsa-3','37')">Check</button>
+  <button class="solve" onclick="toggle('sol-rsa-3')">Show solution</button>
+  <span class="verdict" id="ver-rsa-3"></span>
+</div>
+<div class="solution" id="sol-rsa-3">
+  <div class="step"><b>1.</b> $\varphi(n) = 6 \cdot 10 = 60$. $\gcd(13, 60) = 1$ ✓.</div>
+  <div class="step"><b>2.</b> Find $d$: $13d \equiv 1 \pmod{60}$. Try multiples: $13, 26, 39, 52, 65, \ldots$ none of these is $\equiv 1$. Better: extended Euclidean. Or test $d = (k \cdot 60 + 1) / 13$ for $k = 1, 2, \ldots$:
+    <ul>
+      <li>$k=1$: $61/13$ → not integer.</li>
+      <li>$k=2$: $121/13$ → not integer.</li>
+      <li>...</li>
+      <li>$k=8$: $481/13 = 37$ ✓.</li>
+    </ul>
+  </div>
+  <div class="step"><b>3.</b> Verify: $13 \cdot 37 = 481 = 8 \cdot 60 + 1$. ✓</div>
+  <div class="ans">d = 37</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> $p = 11, q = 13, e = 11, M = 8$. Find $C$.</div>
+<div class="input-row">
+  C =&nbsp;<input type="text" id="ans-rsa-4" placeholder="integer">
+  <button onclick="check('rsa-4','96')">Check</button>
+  <button class="solve" onclick="toggle('sol-rsa-4')">Show solution</button>
+  <span class="verdict" id="ver-rsa-4"></span>
+</div>
+<div class="solution" id="sol-rsa-4">
+  <div class="step"><b>1.</b> $n = 143$. $C = 8^{11} \bmod 143$. Use fast exp.</div>
+  <div class="step"><b>2.</b> $11 = 1011_2$. Note $8 = 2^3$, so easier: $8^{11} = 2^{33}$.</div>
+  <div class="step"><b>3.</b> Compute $2^{33} \bmod 143$:
+    <ul>
+      <li>$2^7 = 128$.</li>
+      <li>$2^{14} = 128^2 = 16384 \equiv 82 \pmod{143}$ (since $114 \cdot 143 = 16302$).</li>
+      <li>$2^{28} = 82^2 = 6724 \equiv 3 \pmod{143}$ (since $47 \cdot 143 = 6721$).</li>
+      <li>$2^{33} = 2^{28} \cdot 2^4 \cdot 2 = 3 \cdot 16 \cdot 2 = 96$.</li>
+    </ul>
+  </div>
+  <div class="ans">C = 96</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> $p = 5, q = 11, e = 3$. Find $d$.</div>
+<div class="input-row">
+  d =&nbsp;<input type="text" id="ans-rsa-5" placeholder="integer">
+  <button onclick="check('rsa-5','27')">Check</button>
+  <button class="solve" onclick="toggle('sol-rsa-5')">Show solution</button>
+  <span class="verdict" id="ver-rsa-5"></span>
+</div>
+<div class="solution" id="sol-rsa-5">
+  <div class="step"><b>1.</b> $\varphi(n) = 4 \cdot 10 = 40$.</div>
+  <div class="step"><b>2.</b> $3d \equiv 1 \pmod{40}$. Test $d = (40k + 1)/3$:
+    <ul>
+      <li>$k=1$: $41/3$ → no.</li>
+      <li>$k=2$: $81/3 = 27$ ✓.</li>
+    </ul>
+  </div>
+  <div class="step"><b>3.</b> Verify: $3 \cdot 27 = 81 = 2 \cdot 40 + 1$. ✓</div>
+  <div class="ans">d = 27</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    08 · RSA ATTACK                            -->
+
+<!-- ============================================================ -->
+
+<section id="rsa-attack">
+  <div class="num">§08 · Public Key</div>
+  <h2>RSA Chosen-Ciphertext Attack</h2>
+  <p class="tagline"><span class="tag tier2">Tier 2</span><span class="tag recur">FA08, FA12 — verbatim repeat</span> Pre-memorize this proof. It's appeared word-for-word in two consecutive years.</p>
+
+  <div class="method">
+    <h3>The Setup</h3>
+    <p>Bob intercepts ciphertext $C = M^e \bmod n$. He wants $M = C^d \bmod n$ but doesn't have $d$. He tricks Alice into signing a related value.</p>
+    <h3>Bob's procedure</h3>
+    <ol>
+      <li>Pick random $r < n$.</li>
+      <li>Compute $Z = r^e \bmod n$, $X = ZC \bmod n$, $t = r^{-1} \bmod n$.</li>
+      <li>Send $X$ to Alice. She signs: $Y = X^d \bmod n$.</li>
+      <li>Bob computes $tY \bmod n$ — and that's $M$.</li>
+    </ol>
+    <h3>Why it works</h3>
+    <p>$Y = X^d = (ZC)^d = Z^d \cdot C^d = (r^e)^d \cdot M = r^{ed} \cdot M = r \cdot M \pmod n$ (since $ed \equiv 1 \pmod{\varphi(n)}$).</p>
+    <p>So $tY = r^{-1} \cdot r \cdot M = M \pmod n$. ✓</p>
+    <div class="callout"><b>Memorize this 3-line argument.</b> The exam asks "show how Bob recovers M". Write the chain $Y \to r^{ed}M \to rM$, then $tY = M$. That's the answer.</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn — fill in the missing step</h3>
+    <div class="problem">In the proof, why does $r^{ed} = r$? <em>One sentence.</em></div>
+    <details><summary>Show answer</summary><div>Because $ed \equiv 1 \pmod{\varphi(n)}$, so by Euler's theorem $r^{ed} \equiv r^1 = r \pmod n$ for any $r$ coprime to $n$.</div></details>
+
+```
+<div class="problem" style="margin-top:1rem">What's the final formula Bob uses to extract $M$?</div>
+<details><summary>Show answer</summary><div>$M = t \cdot Y \bmod n$ where $t = r^{-1} \bmod n$.</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P3.</b> Suppose $n = 35$ (so $p=5, q=7$, $\varphi(n) = 24$, $e = 5$, $d = 5$). Bob picks $r = 3$. Compute $Z = r^e \bmod n$.</div>
+<div class="input-row">
+  Z =&nbsp;<input type="text" id="ans-rsa-attack-3" placeholder="integer">
+  <button onclick="check('rsa-attack-3','33')">Check</button>
+  <button class="solve" onclick="toggle('sol-rsa-attack-3')">Show solution</button>
+  <span class="verdict" id="ver-rsa-attack-3"></span>
+</div>
+<div class="solution" id="sol-rsa-attack-3">
+  <div class="step">$Z = 3^5 \bmod 35 = 243 \bmod 35 = 243 - 6\cdot 35 = 33$.</div>
+  <div class="ans">Z = 33</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> Same setup. If $C = 16$ (the original ciphertext), compute $X = ZC \bmod n$.</div>
+<div class="input-row">
+  X =&nbsp;<input type="text" id="ans-rsa-attack-4" placeholder="integer">
+  <button onclick="check('rsa-attack-4','3')">Check</button>
+  <button class="solve" onclick="toggle('sol-rsa-attack-4')">Show solution</button>
+  <span class="verdict" id="ver-rsa-attack-4"></span>
+</div>
+<div class="solution" id="sol-rsa-attack-4">
+  <div class="step">$X = 33 \cdot 16 = 528 \bmod 35 = 528 - 15\cdot 35 = 3$.</div>
+  <div class="ans">X = 3</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Compute $t = r^{-1} \bmod n$ for $r = 3$, $n = 35$.</div>
+<div class="input-row">
+  t =&nbsp;<input type="text" id="ans-rsa-attack-5" placeholder="integer">
+  <button onclick="check('rsa-attack-5','12')">Check</button>
+  <button class="solve" onclick="toggle('sol-rsa-attack-5')">Show solution</button>
+  <span class="verdict" id="ver-rsa-attack-5"></span>
+</div>
+<div class="solution" id="sol-rsa-attack-5">
+  <div class="step">$3 \cdot t \equiv 1 \pmod{35}$. Try $t = 12$: $3 \cdot 12 = 36 \equiv 1$. ✓</div>
+  <div class="ans">t = 12</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    09 · DH                                    -->
+
+<!-- ============================================================ -->
+
+<section id="dh">
+  <div class="num">§09 · Public Key</div>
+  <h2>Diffie-Hellman Key Exchange</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Given prime $q$, primitive root $\alpha$, and public values $Y_A, Y_B$ — find private keys and shared secret.</p>
+
+  <div class="method">
+    <h3>Recipe</h3>
+    <ul>
+      <li>Public: prime $q$, primitive root $\alpha$ of $q$.</li>
+      <li>Alice picks $X_A$, publishes $Y_A = \alpha^{X_A} \bmod q$.</li>
+      <li>Bob picks $X_B$, publishes $Y_B = \alpha^{X_B} \bmod q$.</li>
+      <li>Shared key $K = Y_B^{X_A} = Y_A^{X_B} = \alpha^{X_A X_B} \bmod q$.</li>
+    </ul>
+    <h3>To find $X_A$ from $Y_A$ (small q only)</h3>
+    <p>Brute force: build a table of $\alpha^k \bmod q$ for $k = 1, 2, \ldots$ until you find $Y_A$.</p>
+    <h3>Showing $\alpha$ is a primitive root</h3>
+    <p>Show that $\alpha^k \bmod q$ takes every value in $\{1, 2, \ldots, q-1\}$ as $k$ ranges over $\{1, \ldots, q-1\}$. (i.e. order of $\alpha$ is $q-1$.)</p>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2008</h3>
+    <div class="qbox">$q = 11$, $\alpha = 2$. Show 2 is a primitive root. If $Y_A = 9$, find $X_A$. If $Y_B = 3$, find shared key $K$.</div>
+    <div class="step"><b>(a)</b> Powers of 2 mod 11: $2^1=2,\ 2^2=4,\ 2^3=8,\ 2^4=16\equiv 5,\ 2^5=10,\ 2^6\equiv 20-11=9,\ 2^7=18\equiv 7,\ 2^8=14\equiv 3,\ 2^9=6,\ 2^{10}=12\equiv 1$. All 10 nonzero residues hit → 2 is a primitive root. ✓</div>
+    <div class="step"><b>(b)</b> $Y_A = 9$. From the table $2^6 \equiv 9$, so $X_A = 6$.</div>
+    <div class="step"><b>(c)</b> $K = Y_B^{X_A} = 3^6 \bmod 11$. $3^2=9$, $3^4=81\equiv 4$, $3^6 = 4 \cdot 9 = 36 \equiv 3 \pmod{11}$.</div>
+    <div class="ans">K = 3</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> $q=11, \alpha=2$. If $Y_B=3$, find $X_B$.</div>
+    <div class="input-row">
+      X_B =&nbsp;<input type="text" id="ans-dh-1" placeholder="integer">
+      <button onclick="check('dh-1','8')">Check</button>
+      <button class="solve" onclick="toggle('sol-dh-1')">Show solution</button>
+      <span class="verdict" id="ver-dh-1"></span>
+    </div>
+    <div class="solution" id="sol-dh-1">
+      <div class="step">From the powers table: $2^8 \equiv 3 \pmod{11}$. So $X_B = 8$.</div>
+      <div class="ans">X_B = 8</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> Verify the shared key by computing it the other way: $K = Y_A^{X_B} = 9^8 \bmod 11$.</div>
+<div class="input-row">
+  K =&nbsp;<input type="text" id="ans-dh-2" placeholder="integer">
+  <button onclick="check('dh-2','3')">Check</button>
+  <button class="solve" onclick="toggle('sol-dh-2')">Show solution</button>
+  <span class="verdict" id="ver-dh-2"></span>
+</div>
+<div class="solution" id="sol-dh-2">
+  <div class="step">$9^2 = 81 \equiv 4$. $9^4 = 16 \equiv 5$. $9^8 = 25 \equiv 3 \pmod{11}$.</div>
+  <div class="ans">K = 3 ✓ (matches Bob's computation)</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> $q = 23, \alpha = 5$. If $Y_A = 8$, find $X_A$ (Alice's private key).</div>
+<div class="input-row">
+  X_A =&nbsp;<input type="text" id="ans-dh-3" placeholder="integer">
+  <button onclick="check('dh-3','6')">Check</button>
+  <button class="solve" onclick="toggle('sol-dh-3')">Show solution</button>
+  <span class="verdict" id="ver-dh-3"></span>
+</div>
+<div class="solution" id="sol-dh-3">
+  <div class="step">Build powers of 5 mod 23 until you hit 8:</div>
+  <table>
+    <tr><th>k</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr>
+    <tr><th>$5^k \bmod 23$</th><td>5</td><td>2</td><td>10</td><td>4</td><td>20</td><td>8</td></tr>
+  </table>
+  <div class="step">Computations: $5^2 = 25 \equiv 2$, $5^3 = 10$, $5^4 = 50 \equiv 4$, $5^5 = 20$, $5^6 = 100 \equiv 8$.</div>
+  <div class="ans">$X_A = 6$</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> $q = 11, \alpha = 2$. If Bob's public key is $Y_B = 4$ and Alice's private key is $X_A = 6$, find the shared key.</div>
+<div class="input-row">
+  K =&nbsp;<input type="text" id="ans-dh-4" placeholder="integer">
+  <button onclick="check('dh-4','4')">Check</button>
+  <button class="solve" onclick="toggle('sol-dh-4')">Show solution</button>
+  <span class="verdict" id="ver-dh-4"></span>
+</div>
+<div class="solution" id="sol-dh-4">
+  <div class="step">$K = Y_B^{X_A} = 4^6 \bmod 11$.</div>
+  <div class="step">$4^2 = 16 \equiv 5$. $4^4 = 25 \equiv 3$. $4^6 = 4^4 \cdot 4^2 = 3 \cdot 5 = 15 \equiv 4 \pmod{11}$.</div>
+  <div class="ans">K = 4</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> $q = 19, \alpha = 2$. $Y_A = 4, Y_B = 7$. Find shared secret $K$.</div>
+<div class="input-row">
+  K =&nbsp;<input type="text" id="ans-dh-5" placeholder="integer">
+  <button onclick="check('dh-5','11')">Check</button>
+  <button class="solve" onclick="toggle('sol-dh-5')">Show solution</button>
+  <span class="verdict" id="ver-dh-5"></span>
+</div>
+<div class="solution" id="sol-dh-5">
+  <div class="step"><b>1.</b> Find $X_A$: $2^{X_A} \equiv 4 \pmod{19}$. $2^2 = 4$ ✓. So $X_A = 2$.</div>
+  <div class="step"><b>2.</b> $K = Y_B^{X_A} = 7^2 = 49 \equiv 49 - 2 \cdot 19 = 11 \pmod{19}$.</div>
+  <div class="step"><b>3.</b> Sanity: find $X_B$ then verify. Powers of 2 mod 19: 2, 4, 8, 16, 13, 7. So $X_B = 6$. $K = 4^6 \bmod 19$. $4^2 = 16$, $4^4 = 256 \equiv 9$ (since $13 \cdot 19 = 247$), $4^6 = 9 \cdot 16 = 144 \equiv 11$ (since $7 \cdot 19 = 133$). ✓</div>
+  <div class="ans">K = 11</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    10 · ELGAMAL                               -->
+
+<!-- ============================================================ -->
+
+<section id="elgamal">
+  <div class="num">§10 · Public Key</div>
+  <h2>ElGamal Encryption</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> Public-key encryption built on Diffie-Hellman. Two values per ciphertext.</p>
+
+  <div class="method">
+    <h3>Setup</h3>
+    <ul>
+      <li>Public: prime $p$, primitive root $\alpha$.</li>
+      <li>Bob's private: $a$. Bob's public: $Y_A = \alpha^a \bmod p$.</li>
+    </ul>
+    <h3>Encrypt $M$ (Alice picks random $k$)</h3>
+    <ul>
+      <li>$r = \alpha^k \bmod p$</li>
+      <li>$t = M \cdot Y_A^k \bmod p$</li>
+      <li>Ciphertext: $(r, t)$.</li>
+    </ul>
+    <h3>Decrypt</h3>
+    <ul>
+      <li>Bob computes $K = r^a \bmod p$, then $M = t \cdot K^{-1} \bmod p$.</li>
+      <li>Equivalently $M = t \cdot r^{-a} \bmod p$.</li>
+    </ul>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2008</h3>
+    <div class="qbox">$p = 17, \alpha = 3, a = 6, M = 14, k = 5$. Find $(r,t)$ and verify decryption.</div>
+    <div class="step"><b>1.</b> Public key: $Y_A = 3^6 \bmod 17$. $3^2=9$, $3^4=81 \equiv 13$, $3^6 = 13\cdot 9 = 117 \equiv 117 - 6\cdot 17 = 15$. $Y_A = 15$.</div>
+    <div class="step"><b>2.</b> $r = 3^5 \bmod 17 = 3^4 \cdot 3 = 13 \cdot 3 = 39 \equiv 5$.</div>
+    <div class="step"><b>3.</b> $t = M \cdot Y_A^k = 14 \cdot 15^5 \bmod 17$. Compute $15^5$: $15^2 = 225 \equiv 4$, $15^4 = 16$, $15^5 = 16\cdot 15 = 240 \equiv 2$. So $t = 14 \cdot 2 = 28 \equiv 11$.</div>
+    <div class="step"><b>4.</b> Ciphertext: $(r, t) = (5, 11)$.</div>
+    <div class="step"><b>5.</b> Decrypt: $K = r^a = 5^6 \bmod 17$. $5^2=25\equiv 8$, $5^4 \equiv 64 \equiv 13$, $5^6 = 13\cdot 8 = 104 \equiv 2$. $K^{-1}$ where $2K^{-1} \equiv 1 \pmod{17}$ → $K^{-1} = 9$. $M = 11 \cdot 9 = 99 \equiv 14 \pmod{17}$. ✓</div>
+    <div class="ans">(r, t) = (5, 11). Decryption recovers M = 14.</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> $p=11, \alpha=2, a=3, M=7, k=4$. Find $r$.</div>
+    <div class="input-row">
+      r =&nbsp;<input type="text" id="ans-eg-1" placeholder="integer">
+      <button onclick="check('eg-1','5')">Check</button>
+      <button class="solve" onclick="toggle('sol-eg-1')">Show solution</button>
+      <span class="verdict" id="ver-eg-1"></span>
+    </div>
+    <div class="solution" id="sol-eg-1">
+      <div class="step">$r = \alpha^k = 2^4 = 16 \equiv 5 \pmod{11}$.</div>
+      <div class="ans">r = 5</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> Same params. Find $t$.</div>
+<div class="input-row">
+  t =&nbsp;<input type="text" id="ans-eg-2" placeholder="integer">
+  <button onclick="check('eg-2','6')">Check</button>
+  <button class="solve" onclick="toggle('sol-eg-2')">Show solution</button>
+  <span class="verdict" id="ver-eg-2"></span>
+</div>
+<div class="solution" id="sol-eg-2">
+  <div class="step">$Y_A = 2^3 = 8$. $Y_A^k = 8^4 \bmod 11$. $8^2 = 64 \equiv 9$, $8^4 = 81 \equiv 4$.</div>
+  <div class="step">$t = M \cdot Y_A^k = 7 \cdot 4 = 28 \equiv 6 \pmod{11}$.</div>
+  <div class="ans">t = 6</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> Same params as P1/P2 ($p=11, a=3$). The ciphertext is $(r, t) = (5, 6)$. Decrypt to recover $M$.</div>
+<div class="input-row">
+  M =&nbsp;<input type="text" id="ans-eg-3" placeholder="integer">
+  <button onclick="check('eg-3','7')">Check</button>
+  <button class="solve" onclick="toggle('sol-eg-3')">Show solution</button>
+  <span class="verdict" id="ver-eg-3"></span>
+</div>
+<div class="solution" id="sol-eg-3">
+  <div class="step"><b>1.</b> Bob computes $K = r^a = 5^3 \bmod 11$. $5^2 = 25 \equiv 3$. $5^3 = 15 \equiv 4$.</div>
+  <div class="step"><b>2.</b> $K^{-1}$: $4 K^{-1} \equiv 1 \pmod{11}$. Try 3: $4 \cdot 3 = 12 \equiv 1$ ✓. So $K^{-1} = 3$.</div>
+  <div class="step"><b>3.</b> $M = t \cdot K^{-1} = 6 \cdot 3 = 18 \equiv 7 \pmod{11}$. ✓</div>
+  <div class="ans">M = 7</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> $p = 23, \alpha = 5, a = 4, M = 10, k = 2$. Find ciphertext $(r, t)$.</div>
+<div class="input-row">
+  r =&nbsp;<input type="text" id="ans-eg-4" placeholder="r">
+  t =&nbsp;<input type="text" id="ans-eg-4t" placeholder="t">
+  <button onclick="check('eg-4','2'); check('eg-4t','22')">Check</button>
+  <button class="solve" onclick="toggle('sol-eg-4')">Show solution</button>
+  <span class="verdict" id="ver-eg-4"></span>
+  <span class="verdict" id="ver-eg-4t"></span>
+</div>
+<div class="solution" id="sol-eg-4">
+  <div class="step"><b>1.</b> Public key: $Y_A = 5^4 \bmod 23$. $5^2 = 25 \equiv 2$. $5^4 = 4$.</div>
+  <div class="step"><b>2.</b> $r = \alpha^k = 5^2 \equiv 2 \pmod{23}$.</div>
+  <div class="step"><b>3.</b> $t = M \cdot Y_A^k = 10 \cdot 4^2 = 10 \cdot 16 = 160 \bmod 23$. $6 \cdot 23 = 138$, $160 - 138 = 22$.</div>
+  <div class="ans">$(r, t) = (2, 22)$</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Decrypt the previous ciphertext (P4) to recover $M$.</div>
+<div class="input-row">
+  M =&nbsp;<input type="text" id="ans-eg-5" placeholder="integer">
+  <button onclick="check('eg-5','10')">Check</button>
+  <button class="solve" onclick="toggle('sol-eg-5')">Show solution</button>
+  <span class="verdict" id="ver-eg-5"></span>
+</div>
+<div class="solution" id="sol-eg-5">
+  <div class="step"><b>1.</b> $K = r^a = 2^4 = 16 \pmod{23}$.</div>
+  <div class="step"><b>2.</b> $K^{-1}$: $16 K^{-1} \equiv 1 \pmod{23}$. Try $K^{-1} = 13$: $16 \cdot 13 = 208 = 9 \cdot 23 + 1 \equiv 1$ ✓.</div>
+  <div class="step"><b>3.</b> $M = t \cdot K^{-1} = 22 \cdot 13 = 286 \bmod 23$. $12 \cdot 23 = 276$. $286 - 276 = 10$. ✓</div>
+  <div class="ans">M = 10</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    11 · ECC                                   -->
+
+<!-- ============================================================ -->
+
+<section id="ecc">
+  <div class="num">§11 · Public Key</div>
+  <h2>Elliptic Curves — Points &amp; Addition</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year</span> List points on $E_p(a,b): y^2 = x^3 + ax + b \pmod p$, then add or double.</p>
+
+  <div class="method">
+    <h3>Listing all points</h3>
+    <ol>
+      <li>For each $x = 0, 1, \ldots, p-1$: compute $r = x^3 + ax + b \bmod p$.</li>
+      <li>Check if $r$ is a quadratic residue mod $p$ (i.e. $y^2 \equiv r$ has a solution). If yes, find both $y$ values. If no, no point at this $x$.</li>
+      <li>Also include the point at infinity $\mathcal{O}$.</li>
+    </ol>
+    <p class="muted">QR check shortcut: precompute the QRs of $p$ by squaring $0, 1, \ldots, \lfloor p/2 \rfloor$. For $p=11$ the QRs are $\{0, 1, 3, 4, 5, 9\}$.</p>
+    <h3>Point addition $(x_1, y_1) + (x_2, y_2)$</h3>
+    <p>Slope $\lambda$:</p>
+    <ul>
+      <li>If $P_1 \ne P_2$: $\lambda = (y_2 - y_1) \cdot (x_2 - x_1)^{-1} \bmod p$.</li>
+      <li>If $P_1 = P_2$ (doubling): $\lambda = (3x_1^2 + a) \cdot (2y_1)^{-1} \bmod p$.</li>
+    </ul>
+    <p>Then $x_3 = \lambda^2 - x_1 - x_2 \bmod p$, $y_3 = \lambda(x_1 - x_3) - y_1 \bmod p$.</p>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2019</h3>
+    <div class="qbox">$E_{11}: y^2 = x^3 + x + 6$. List all points.</div>
+    <div class="step">QRs mod 11: $\{0,1,3,4,5,9\}$. Compute $r = x^3+x+6$ mod 11 for each $x$:</div>
+    <table>
+      <tr><th>x</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr>
+      <tr><th>r</th><td>6</td><td>8</td><td>5</td><td>3</td><td>8</td><td>4</td><td>8</td><td>4</td><td>9</td><td>7</td><td>4</td></tr>
+      <tr><th>QR?</th><td>no</td><td>no</td><td>yes</td><td>yes</td><td>no</td><td>yes</td><td>no</td><td>yes</td><td>yes</td><td>no</td><td>yes</td></tr>
+      <tr><th>y</th><td>—</td><td>—</td><td>4,7</td><td>5,6</td><td>—</td><td>2,9</td><td>—</td><td>2,9</td><td>3,8</td><td>—</td><td>2,9</td></tr>
+    </table>
+    <div class="ans">12 points: (2,4),(2,7),(3,5),(3,6),(5,2),(5,9),(7,2),(7,9),(8,3),(8,8),(10,2),(10,9). Plus $\mathcal{O}$.</div>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2008</h3>
+    <div class="qbox">On $E: y^2 = x^3 - 2 \pmod 7$, find $(3,2) + (5,5)$.</div>
+    <div class="step"><b>1.</b> Different points. $\lambda = (5-2)(5-3)^{-1} = 3 \cdot 2^{-1} \pmod 7$. $2^{-1} \equiv 4 \pmod 7$ (since $2\cdot 4 = 8 \equiv 1$).</div>
+    <div class="step"><b>2.</b> $\lambda = 3 \cdot 4 = 12 \equiv 5$.</div>
+    <div class="step"><b>3.</b> $x_3 = 25 - 3 - 5 = 17 \equiv 3$.</div>
+    <div class="step"><b>4.</b> $y_3 = 5(3 - 3) - 2 = -2 \equiv 5 \pmod 7$.</div>
+    <div class="ans">(3,2) + (5,5) = (3, 5)</div>
+  </div>
+
+  <div class="example">
+    <h3>Doubling: $(3,2) + (3,2)$ on the same curve</h3>
+    <div class="step"><b>1.</b> $\lambda = (3 \cdot 9 + 0)(2 \cdot 2)^{-1} = 27 \cdot 4^{-1} \pmod 7 = 6 \cdot 2 = 12 \equiv 5$ (since $4^{-1} \equiv 2 \pmod 7$).</div>
+    <div class="step"><b>2.</b> $x_3 = 25 - 6 = 19 \equiv 5$.</div>
+    <div class="step"><b>3.</b> $y_3 = 5(3 - 5) - 2 = -12 \equiv 2 \pmod 7$.</div>
+    <div class="ans">2(3,2) = (5, 2)</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> On $E_{11}: y^2 = x^3 + x + 6$, is $(2, 7)$ a point on the curve? <em>(yes/no)</em></div>
+    <div class="input-row">
+      <input type="text" id="ans-ecc-1" placeholder="yes / no">
+      <button onclick="checkText('ecc-1','yes')">Check</button>
+      <button class="solve" onclick="toggle('sol-ecc-1')">Show solution</button>
+      <span class="verdict" id="ver-ecc-1"></span>
+    </div>
+    <div class="solution" id="sol-ecc-1">
+      <div class="step">$y^2 = 49 \equiv 5$. $x^3 + x + 6 = 8 + 2 + 6 = 16 \equiv 5$. Equal → yes.</div>
+      <div class="ans">Yes — (2,7) is on the curve.</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> On $E: y^2 = x^3 + x + 1 \pmod 5$, list all points (without $\mathcal{O}$). How many?</div>
+<div class="input-row">
+  count =&nbsp;<input type="text" id="ans-ecc-2" placeholder="integer">
+  <button onclick="check('ecc-2','8')">Check</button>
+  <button class="solve" onclick="toggle('sol-ecc-2')">Show solution</button>
+  <span class="verdict" id="ver-ecc-2"></span>
+</div>
+<div class="solution" id="sol-ecc-2">
+  <div class="step">QRs mod 5 = {0,1,4}.</div>
+  <table>
+    <tr><th>x</th><th>0</th><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+    <tr><th>r</th><td>1</td><td>3</td><td>1</td><td>1</td><td>4</td></tr>
+    <tr><th>QR?</th><td>y</td><td>n</td><td>y</td><td>y</td><td>y</td></tr>
+    <tr><th>y vals</th><td>1,4</td><td>—</td><td>1,4</td><td>1,4</td><td>2,3</td></tr>
+  </table>
+  <div class="ans">8 points: (0,1),(0,4),(2,1),(2,4),(3,1),(3,4),(4,2),(4,3).</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> On $E: y^2 = x^3 - 2 \pmod 7$, compute $(3,2) + (3,2)$ (point doubling).</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-ecc-3" placeholder="(x,y)">
+  <button onclick="checkText('ecc-3','(5,2)')">Check</button>
+  <button class="solve" onclick="toggle('sol-ecc-3')">Show solution</button>
+  <span class="verdict" id="ver-ecc-3"></span>
+</div>
+<div class="solution" id="sol-ecc-3">
+  <div class="step"><b>1.</b> Doubling formula: $\lambda = (3x_1^2 + a) \cdot (2y_1)^{-1}$. Here $a = 0$.</div>
+  <div class="step"><b>2.</b> $\lambda = (3 \cdot 9) \cdot (4)^{-1} = 27 \cdot 4^{-1} \pmod 7$.</div>
+  <div class="step"><b>3.</b> $4^{-1} \bmod 7$: $4 \cdot 2 = 8 \equiv 1$. So $4^{-1} = 2$.</div>
+  <div class="step"><b>4.</b> $27 \equiv 6$. $\lambda = 6 \cdot 2 = 12 \equiv 5 \pmod 7$.</div>
+  <div class="step"><b>5.</b> $x_3 = \lambda^2 - 2x_1 = 25 - 6 = 19 \equiv 5$.</div>
+  <div class="step"><b>6.</b> $y_3 = \lambda(x_1 - x_3) - y_1 = 5(3 - 5) - 2 = -10 - 2 = -12 \equiv 2 \pmod 7$.</div>
+  <div class="step">Verify (5,2) on curve: $5^3 - 2 = 123 \equiv 4 \pmod 7$. $2^2 = 4$. ✓</div>
+  <div class="ans">$(3,2) + (3,2) = (5, 2)$</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> On $E_{11}: y^2 = x^3 + x + 6$ with $G = (2, 7)$, compute $2G$.</div>
+<div class="input-row">
+  2G =&nbsp;<input type="text" id="ans-ecc-4" placeholder="(x,y)">
+  <button onclick="checkText('ecc-4','(5,2)')">Check</button>
+  <button class="solve" onclick="toggle('sol-ecc-4')">Show solution</button>
+  <span class="verdict" id="ver-ecc-4"></span>
+</div>
+<div class="solution" id="sol-ecc-4">
+  <div class="step"><b>1.</b> Doubling: $\lambda = (3 \cdot 4 + 1)(2 \cdot 7)^{-1} = 13 \cdot 14^{-1} \pmod{11}$.</div>
+  <div class="step"><b>2.</b> $13 \equiv 2$, $14 \equiv 3$. $3^{-1} \bmod 11$: $3 \cdot 4 = 12 \equiv 1$ → $3^{-1} = 4$.</div>
+  <div class="step"><b>3.</b> $\lambda = 2 \cdot 4 = 8$.</div>
+  <div class="step"><b>4.</b> $x_3 = 64 - 4 = 60 \equiv 5 \pmod{11}$.</div>
+  <div class="step"><b>5.</b> $y_3 = 8(2 - 5) - 7 = -24 - 7 = -31 \equiv 2 \pmod{11}$.</div>
+  <div class="step">Verify (5, 2): $5^3 + 5 + 6 = 136 \equiv 4 \pmod{11}$, $2^2 = 4$ ✓.</div>
+  <div class="ans">$2G = (5, 2)$</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Same curve. Compute $3G = G + 2G = (2,7) + (5,2)$.</div>
+<div class="input-row">
+  3G =&nbsp;<input type="text" id="ans-ecc-5" placeholder="(x,y)">
+  <button onclick="checkText('ecc-5','(8,3)')">Check</button>
+  <button class="solve" onclick="toggle('sol-ecc-5')">Show solution</button>
+  <span class="verdict" id="ver-ecc-5"></span>
+</div>
+<div class="solution" id="sol-ecc-5">
+  <div class="step"><b>1.</b> Different points: $\lambda = (y_2 - y_1)(x_2 - x_1)^{-1} = (2-7)(5-2)^{-1} = -5 \cdot 3^{-1}$.</div>
+  <div class="step"><b>2.</b> $-5 \equiv 6 \pmod{11}$. $3^{-1} = 4$.</div>
+  <div class="step"><b>3.</b> $\lambda = 6 \cdot 4 = 24 \equiv 2$.</div>
+  <div class="step"><b>4.</b> $x_3 = 4 - 2 - 5 = -3 \equiv 8$.</div>
+  <div class="step"><b>5.</b> $y_3 = 2(2 - 8) - 7 = -12 - 7 = -19 \equiv 3 \pmod{11}$.</div>
+  <div class="step">Verify (8,3): $8^3 + 8 + 6 = 526 \equiv 9 \pmod{11}$. $3^2 = 9$ ✓.</div>
+  <div class="ans">$3G = (8, 3)$</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    12 · ECC ENCRYPTION                        -->
+
+<!-- ============================================================ -->
+
+<section id="ecc-enc">
+  <div class="num">§12 · Public Key</div>
+  <h2>ECC Encryption (Menezes-Vanstone style)</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Fall 2019</span> ECC analog of ElGamal. Encode message as a point, encrypt with random $k$.</p>
+
+  <div class="method">
+    <h3>Setup</h3>
+    <ul>
+      <li>Curve $E$, base point $G$.</li>
+      <li>Bob's private $n_B$. Bob's public $P_B = n_B G$.</li>
+    </ul>
+    <h3>Encrypt point $P_m$ (Alice picks random $k$)</h3>
+    <p>Ciphertext: $C_m = (\,kG,\ P_m + k P_B\,)$.</p>
+    <h3>Decrypt</h3>
+    <p>Bob computes $n_B(kG) = k(n_B G) = k P_B$. Then $P_m = (P_m + k P_B) - k P_B$.</p>
+    <p class="muted">Subtraction means adding the negative: $-(x,y) = (x, -y)$ on the curve.</p>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2019</h3>
+    <div class="qbox">$E_{11}: y^2 = x^3 + x + 6$, $G = (2,7)$, $n_B = 7$, $P_m = (5,8)$, $k = 3$.</div>
+    <div class="step"><b>1.</b> Bob's public key: $P_B = 7G = 7(2,7)$. (Compute by repeated addition.)</div>
+    <div class="step"><b>2.</b> Ciphertext: $C_m = (kG,\ P_m + kP_B) = (3G,\ (5,8) + 3P_B)$.</div>
+    <div class="ans">Form: C_m = (3G, P_m + 3P_B). Concrete points require grinding the addition chain.</div>
+    <p class="muted">The exam's "answer" stops at the formula. If you must compute concretely, do scalar multiplication via doubling. For 7G: $2G$ → $4G$ → $4G + 2G + G = 7G$.</p>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Same curve, same $G$. If Alice's $P_m = (10, 9)$ and she picks $k = 2$, what's the structure of the ciphertext?</div>
+    <details><summary>Show answer</summary><div>$C_m = (2G,\ (10,9) + 2P_B)$ where $P_B = 7G$. Write the formula clearly even if you don't fully compute the points — that's worth most of the marks.</div></details>
+
+```
+<div class="problem" style="margin-top:1rem"><b>P2.</b> Using results from §11: $P_B = 7G$. We computed $2G = (5,2)$ and $3G = (8,3)$. Concretely compute $kG$ for $k=2$ then write $C_m$ for $P_m = (10,9), k=2, P_B = 7G$.</div>
+<details><summary>Show answer</summary><div>
+  <div class="step">$kG = 2G = (5,2)$.</div>
+  <div class="step">$kP_B = 2 \cdot 7G = 14G$ (a curve point).</div>
+  <div class="step">Final ciphertext: $C_m = ((5,2),\ (10,9) + 14G)$.</div>
+  <div class="step">In an exam, leaving the second coord as "(10,9) + 14G" is acceptable if you've stated how to compute it (compute 14G by repeated doubling/addition, then add to (10,9) using the standard formula).</div>
+</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P3.</b> The receiver Bob has $n_B$, and receives $(C_1, C_2)$ where $C_1 = kG$ and $C_2 = P_m + kP_B$. Write the formula Bob uses to recover $P_m$.</div>
+<details><summary>Show answer</summary><div>
+  <div class="step">$P_m = C_2 - n_B \cdot C_1$</div>
+  <div class="step">Why: $n_B \cdot C_1 = n_B \cdot (kG) = k \cdot (n_B G) = k P_B$. Subtracting gives $C_2 - kP_B = P_m$.</div>
+  <div class="step">"Subtraction" on the curve = addition with the negated point: $-(x,y) = (x, -y \bmod p)$.</div>
+</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P4.</b> Why is ECC preferred over RSA for the same security level?</div>
+<details><summary>Show answer</summary><div>Smaller keys for equivalent security. ECC's security relies on the discrete log on elliptic curves, where no sub-exponential algorithm is known. RSA's security relies on integer factorization, which has sub-exponential algorithms (general number field sieve). Roughly: 256-bit ECC ≈ 3072-bit RSA in security strength. Smaller keys → faster operations, less bandwidth, less storage.</div></details>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    13 · MODES                                 -->
+
+<!-- ============================================================ -->
+
+<section id="modes">
+  <div class="num">§13 · Symmetric</div>
+  <h2>Block Cipher Modes of Operation</h2>
+  <p class="tagline"><span class="tag tier2">Tier 2</span><span class="tag recur">FA12 P14 (CBC variant)</span> Know each mode's structure, error propagation, and security properties.</p>
+
+  <div class="method">
+    <h3>The Five Modes</h3>
+    <ul>
+      <li><strong>ECB</strong> — Electronic Codebook. $C_i = E_K(P_i)$. <em>No chaining.</em> Identical blocks → identical ciphertext (security disaster). Used: secure transmission of single value.</li>
+      <li><strong>CBC</strong> — Cipher Block Chaining. $C_i = E_K(P_i \oplus C_{i-1})$, $C_0 = \text{IV}$. Hides patterns. Authentication possible. Error in $C_i$ corrupts $P_i$ and $P_{i+1}$ on decryption.</li>
+      <li><strong>CFB</strong> — Cipher Feedback. Stream-style. $C_i = P_i \oplus E_K(C_{i-1})$. Self-synchronizing. Good for stream of small bits.</li>
+      <li><strong>OFB</strong> — Output Feedback. Generates keystream independent of plaintext: $O_i = E_K(O_{i-1})$, $C_i = P_i \oplus O_i$. No error propagation in plaintext. Sensitive to bit flips ⇒ <em>same</em> bit flip in plaintext.</li>
+      <li><strong>CTR</strong> — Counter. $C_i = P_i \oplus E_K(\text{nonce} \| i)$. Parallel. No chaining. Nonce must never repeat.</li>
+    </ul>
+    <h3>Common exam variants</h3>
+    <p>"Show that CBC encryption can detect tampering if last block known", "draw OFB diagram", "explain why ECB leaks structure". Memorize the 5 diagrams + 5 one-line security comments.</p>
+  </div>
+
+  <div class="callout"><b>Quick test:</b> If a single ciphertext bit is flipped in transit, in which mode does the error stay confined to one block of plaintext during decryption? <em>OFB and CTR</em> (single-bit flip in plaintext bit). CBC: corrupts the current block fully + 1 bit of the next. CFB: corrupts the current block + a partial of the next.</div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Why is ECB mode unsuitable for encrypting an image?</div>
+    <details><summary>Show answer</summary><div>Identical plaintext blocks produce identical ciphertext blocks. Visually structured plaintexts (logos, text on uniform background) leave their structure visible in the ciphertext — the famous "ECB penguin" demonstration.</div></details>
+
+```
+<div class="problem" style="margin-top:1rem"><b>P2.</b> In CBC, how does encryption parallelize? How does decryption parallelize?</div>
+<details><summary>Show answer</summary><div>Encryption is <em>strictly serial</em> (each block depends on the previous ciphertext). Decryption is <em>parallelizable</em> — each $P_i = D_K(C_i) \oplus C_{i-1}$ can be computed independently given the ciphertext stream.</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P3.</b> Why does CTR mode require a unique nonce per encryption (never reuse)?</div>
+<details><summary>Show answer</summary><div>If two messages use the same nonce + counter sequence, the same keystream is generated. XOR-ing the two ciphertexts cancels the keystream, leaving $P_1 \oplus P_2$ — directly leaks plaintext relationship and often enables full plaintext recovery from known plaintext or statistical attacks. Same flaw as reusing a one-time pad.</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P4.</b> Which modes allow random-access decryption (decrypt block $i$ without decrypting blocks $0..i-1$)?</div>
+<details><summary>Show answer</summary><div>ECB and CTR. Both compute $P_i$ from a function of $C_i$ (and counter $i$ for CTR) without depending on neighboring ciphertext blocks. CBC decryption only needs $C_i$ and $C_{i-1}$, so it's <em>also</em> random-access in a weak sense (you need the predecessor block, but not the entire chain).</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P5.</b> If a single bit is flipped in $C_i$ during transit, which plaintext bits/blocks are affected on decryption — for CBC vs OFB vs CTR?</div>
+<details><summary>Show answer</summary><div>
+  <div class="step"><b>CBC:</b> $P_i$ is corrupted (entire block — decryption inverts AES on $C_i$). $P_{i+1}$ has the <em>same single bit</em> flipped (because $P_{i+1} = D_K(C_{i+1}) \oplus C_i$ — only one bit of $C_i$ matters).</div>
+  <div class="step"><b>OFB:</b> Only that single bit of $P_i$ is flipped. Keystream is independent of ciphertext.</div>
+  <div class="step"><b>CTR:</b> Same as OFB — single bit flip in $P_i$, no propagation.</div>
+</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P6.</b> What's the security weakness of ECB beyond just identical-block leakage?</div>
+<details><summary>Show answer</summary><div>Block reordering and substitution attacks. An attacker who can intercept and modify ciphertext can swap blocks, repeat blocks, or splice in blocks captured from other messages encrypted with the same key — and the receiver has no way to detect it. CBC binds blocks together, so swap/splice changes the next block's decryption, which is at least detectable as garbage.</div></details>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    14 · AES ROUND                             -->
+
+<!-- ============================================================ -->
+
+<section id="aes-round">
+  <div class="num">§14 · Symmetric</div>
+  <h2>AES First Round</h2>
+  <p class="tagline"><span class="tag tier3">Tier 3</span><span class="tag recur">FA19 only — but it appeared</span> Hand-trace AddRoundKey → SubBytes → ShiftRows on a 4×4 byte state.</p>
+
+  <div class="method">
+    <h3>The 4 Operations</h3>
+    <ol>
+      <li><strong>State arrangement</strong>: 16 bytes filled <em>column-major</em> (byte 0 → row 0 col 0, byte 1 → row 1 col 0, byte 4 → row 0 col 1, etc.).</li>
+      <li><strong>AddRoundKey</strong>: XOR each state byte with the corresponding key byte.</li>
+      <li><strong>SubBytes</strong>: replace each byte using the S-Box (lookup table provided in exam).</li>
+      <li><strong>ShiftRows</strong>: row 0 unchanged. Row 1 left-shift by 1. Row 2 left-shift by 2. Row 3 left-shift by 3.</li>
+    </ol>
+    <p class="muted">A round also has MixColumns at the end (but the exam version stops at ShiftRows). The final round skips MixColumns.</p>
+  </div>
+
+  <div class="example">
+    <h3>Walkthrough · Fall 2019 style</h3>
+    <div class="qbox">Plaintext: {12121212 23232323 45454545 56565656}, Key: {3636…36}.</div>
+    <div class="step"><b>1.</b> Original state (column-major):</div>
+    <table>
+      <tr><td>12</td><td>23</td><td>45</td><td>56</td></tr>
+      <tr><td>12</td><td>23</td><td>45</td><td>56</td></tr>
+      <tr><td>12</td><td>23</td><td>45</td><td>56</td></tr>
+      <tr><td>12</td><td>23</td><td>45</td><td>56</td></tr>
+    </table>
+    <div class="step"><b>2.</b> AddRoundKey (XOR every byte with 36):
+      <ul><li>$12 \oplus 36 = 24$. $\,23 \oplus 36 = 15$. $\,45 \oplus 36 = 73$. $\,56 \oplus 36 = 60$.</li></ul>
+    </div>
+    <table>
+      <tr><td>24</td><td>15</td><td>73</td><td>60</td></tr>
+      <tr><td>24</td><td>15</td><td>73</td><td>60</td></tr>
+      <tr><td>24</td><td>15</td><td>73</td><td>60</td></tr>
+      <tr><td>24</td><td>15</td><td>73</td><td>60</td></tr>
+    </table>
+    <div class="step"><b>3.</b> SubBytes — look up each byte in the S-Box table provided. (e.g. S-Box[24] = 36, S-Box[15] = 59, etc.) Apply to every cell.</div>
+    <div class="step"><b>4.</b> ShiftRows: row 1 shifts 1, row 2 shifts 2, row 3 shifts 3.</div>
+    <div class="ans">Show all 4 states. Bytes filled column-major. XOR done in hex (XOR each nibble independently).</div>
+  </div>
+
+  <div class="callout"><b>XOR in hex tip:</b> Convert each hex byte to 8 bits, XOR bitwise, convert back. Or memorize the per-nibble XOR: $1 \oplus 3 = 0010 = 2$, $2 \oplus 6 = 0100 = 4$, etc.</div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Compute $0x77 \oplus 0x36$.</div>
+    <div class="input-row">
+      result =&nbsp;<input type="text" id="ans-aes-1" placeholder="hex byte (e.g. 41)">
+      <button onclick="checkText('aes-1','41')">Check</button>
+      <button class="solve" onclick="toggle('sol-aes-1')">Show solution</button>
+      <span class="verdict" id="ver-aes-1"></span>
+    </div>
+    <div class="solution" id="sol-aes-1">
+      <div class="step">$77_{16} = 0111\ 0111$, $36_{16} = 0011\ 0110$. XOR = $0100\ 0001 = 41_{16}$.</div>
+      <div class="ans">0x41</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> After ShiftRows, what byte ends up in position (row=1, col=0) given the original state had byte $b_{1,1}$ at (row=1, col=1)?</div>
+<details><summary>Show answer</summary><div>Row 1 shifts left by 1, so the byte originally at (1,1) ends at (1,0). Row 2 shifts left by 2, row 3 shifts left by 3.</div></details>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> Compute $0x12 \oplus 0x36$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-aes-3" placeholder="hex byte">
+  <button onclick="checkText('aes-3','24')">Check</button>
+  <button class="solve" onclick="toggle('sol-aes-3')">Show solution</button>
+  <span class="verdict" id="ver-aes-3"></span>
+</div>
+<div class="solution" id="sol-aes-3">
+  <div class="step">$12_{16} = 0001\ 0010$, $36_{16} = 0011\ 0110$. XOR bit-by-bit = $0010\ 0100 = 24_{16}$.</div>
+  <div class="ans">0x24</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> Compute $0x45 \oplus 0x36$.</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-aes-4" placeholder="hex byte">
+  <button onclick="checkText('aes-4','73')">Check</button>
+  <button class="solve" onclick="toggle('sol-aes-4')">Show solution</button>
+  <span class="verdict" id="ver-aes-4"></span>
+</div>
+<div class="solution" id="sol-aes-4">
+  <div class="step">$45_{16} = 0100\ 0101$, $36_{16} = 0011\ 0110$. XOR = $0111\ 0011 = 73_{16}$.</div>
+  <div class="ans">0x73</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> Compute $0x77 \oplus 0x77$ (any byte XOR'd with itself).</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-aes-5" placeholder="hex byte">
+  <button onclick="checkText('aes-5','00')">Check</button>
+  <button class="solve" onclick="toggle('sol-aes-5')">Show solution</button>
+  <span class="verdict" id="ver-aes-5"></span>
+</div>
+<div class="solution" id="sol-aes-5">
+  <div class="step">$x \oplus x = 0$ for any $x$. (XOR is its own inverse.)</div>
+  <div class="ans">0x00</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P6.</b> If the original 4×4 state is filled with byte 0xAA everywhere and the round key is 0x55 everywhere, what is the state after AddRoundKey?</div>
+<details><summary>Show answer</summary><div>$AA_{16} = 1010\ 1010$, $55_{16} = 0101\ 0101$. XOR = $1111\ 1111 = FF$. Every cell becomes 0xFF.</div></details>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    15 · AES KEY EXPANSION                     -->
+
+<!-- ============================================================ -->
+
+<section id="aes-keyexp">
+  <div class="num">§15 · Symmetric</div>
+  <h2>AES Key Expansion</h2>
+  <p class="tagline"><span class="tag tier3">Tier 3</span><span class="tag recur">FA19 only</span> Generate W[0..43] from the original 16-byte key. Exam asks W[4..7] and W[8..11].</p>
+
+  <div class="method">
+    <h3>Procedure</h3>
+    <ol>
+      <li>Original key fills $W[0], W[1], W[2], W[3]$ (each $W[i]$ is 4 bytes).</li>
+      <li>For $i = 4, 5, \ldots, 43$:
+        <ul>
+          <li>$\text{temp} = W[i-1]$.</li>
+          <li>If $i \bmod 4 = 0$: $\text{temp} = \text{SubWord}(\text{RotWord}(\text{temp})) \oplus \text{Rcon}[i/4]$.</li>
+          <li>$W[i] = W[i-4] \oplus \text{temp}$.</li>
+        </ul>
+      </li>
+    </ol>
+    <p class="muted"><b>RotWord</b>: cyclic left rotation by 1 byte. <b>SubWord</b>: apply S-Box to each byte. <b>Rcon</b>[1..10] = 01, 02, 04, 08, 10, 20, 40, 80, 1B, 36 (all in hex, with the value placed in the leftmost byte and 00 in the other three).</p>
+  </div>
+
+  <div class="example">
+    <h3>Worked Example · Fall 2019 style</h3>
+    <div class="qbox">All original key bytes are 0x45. Compute W[4].</div>
+    <div class="step"><b>1.</b> $W[0] = W[1] = W[2] = W[3] = (45, 45, 45, 45)$.</div>
+    <div class="step"><b>2.</b> $i=4$: $\text{temp} = W[3] = (45,45,45,45)$. RotWord → $(45,45,45,45)$ (all equal, unchanged). SubWord → $(\text{S-Box}[45], \ldots) = (6E, 6E, 6E, 6E)$. XOR Rcon[1] = (01,00,00,00) → $(6F, 6E, 6E, 6E)$.</div>
+    <div class="step"><b>3.</b> $W[4] = W[0] \oplus \text{temp} = (45,45,45,45) \oplus (6F,6E,6E,6E) = (2A, 2B, 2B, 2B)$.</div>
+    <div class="ans">W[4] = (2A, 2B, 2B, 2B). Then W[5] = W[1] ⊕ W[4], W[6] = W[2] ⊕ W[5], W[7] = W[3] ⊕ W[6].</div>
+  </div>
+
+  <div class="callout"><b>Speed tip:</b> When the original key has all identical bytes, RotWord is the identity and W[5..7] propagate as simple XOR cascades. Most of the work is the single S-Box lookup at i=4 and i=8.</div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> If $W[4] = (2A,2B,2B,2B)$ and $W[1] = (45,45,45,45)$, what is $W[5]$?</div>
+    <div class="input-row">
+      W[5] =&nbsp;<input type="text" id="ans-keyexp-1" placeholder="4 hex bytes">
+      <button onclick="checkText('keyexp-1','6f6e6e6e')">Check</button>
+      <button class="solve" onclick="toggle('sol-keyexp-1')">Show solution</button>
+      <span class="verdict" id="ver-keyexp-1"></span>
+    </div>
+    <div class="solution" id="sol-keyexp-1">
+      <div class="step">$i=5$, $5 \bmod 4 \ne 0$, so $\text{temp} = W[4]$ unchanged.</div>
+      <div class="step">$W[5] = W[1] \oplus W[4] = (45,45,45,45) \oplus (2A,2B,2B,2B) = (6F, 6E, 6E, 6E)$.</div>
+      <div class="ans">W[5] = (6F, 6E, 6E, 6E)</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1.5rem"><b>P2.</b> What does RotWord do to the word $(A1, B2, C3, D4)$?</div>
+<div class="input-row">
+  result =&nbsp;<input type="text" id="ans-keyexp-2" placeholder="4 hex bytes">
+  <button onclick="checkText('keyexp-2','b2c3d4a1')">Check</button>
+  <button class="solve" onclick="toggle('sol-keyexp-2')">Show solution</button>
+  <span class="verdict" id="ver-keyexp-2"></span>
+</div>
+<div class="solution" id="sol-keyexp-2">
+  <div class="step">RotWord = cyclic left shift by 1 byte. $(A1, B2, C3, D4) \to (B2, C3, D4, A1)$.</div>
+  <div class="ans">(B2, C3, D4, A1)</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P3.</b> What is $\text{Rcon}[2]$ in 4-byte form?</div>
+<div class="input-row">
+  Rcon[2] =&nbsp;<input type="text" id="ans-keyexp-3" placeholder="4 hex bytes">
+  <button onclick="checkText('keyexp-3','02000000')">Check</button>
+  <button class="solve" onclick="toggle('sol-keyexp-3')">Show solution</button>
+  <span class="verdict" id="ver-keyexp-3"></span>
+</div>
+<div class="solution" id="sol-keyexp-3">
+  <div class="step">Rcon values are 01, 02, 04, 08, 10, 20, 40, 80, 1B, 36 — placed in the leftmost byte, with three 0x00 trailing.</div>
+  <div class="step">Rcon[2] = (02, 00, 00, 00).</div>
+  <div class="ans">(02, 00, 00, 00)</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P4.</b> If the original key is all zeros (16 bytes of 0x00), compute $W[4]$. Use S-Box[0x00] = 0x63.</div>
+<div class="input-row">
+  W[4] =&nbsp;<input type="text" id="ans-keyexp-4" placeholder="4 hex bytes">
+  <button onclick="checkText('keyexp-4','62636363')">Check</button>
+  <button class="solve" onclick="toggle('sol-keyexp-4')">Show solution</button>
+  <span class="verdict" id="ver-keyexp-4"></span>
+</div>
+<div class="solution" id="sol-keyexp-4">
+  <div class="step"><b>1.</b> $W[3] = (00,00,00,00)$. RotWord → $(00,00,00,00)$.</div>
+  <div class="step"><b>2.</b> SubWord → $(63,63,63,63)$.</div>
+  <div class="step"><b>3.</b> XOR Rcon[1] = $(01,00,00,00)$: temp = $(62, 63, 63, 63)$.</div>
+  <div class="step"><b>4.</b> $W[4] = W[0] \oplus \text{temp} = (00,00,00,00) \oplus (62,63,63,63) = (62, 63, 63, 63)$.</div>
+  <div class="ans">W[4] = (62, 63, 63, 63)</div>
+</div>
+
+<div class="problem" style="margin-top:1.5rem"><b>P5.</b> For $i = 8$, what's the formula for temp before XORing with $W[i-4]$?</div>
+<details><summary>Show answer</summary><div>$8 \bmod 4 = 0$, so temp = SubWord(RotWord($W[7]$)) ⊕ Rcon[8/4] = SubWord(RotWord($W[7]$)) ⊕ Rcon[2] = SubWord(RotWord($W[7]$)) ⊕ (02,00,00,00). Then $W[8] = W[4] \oplus \text{temp}$.</div></details>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    16 · HASH                                  -->
+
+<!-- ============================================================ -->
+
+<section id="hash">
+  <div class="num">§16 · Auth</div>
+  <h2>Hash Functions &amp; MAC</h2>
+  <p class="tagline"><span class="tag tier2">Tier 2</span><span class="tag recur">FA19 P18</span> Properties, HMAC structure, and the recurring "scheme analysis" question.</p>
+
+  <div class="method">
+    <h3>Hash function security properties (in increasing strength)</h3>
+    <ol>
+      <li><strong>Preimage resistance</strong>: given $h$, hard to find $m$ with $H(m) = h$.</li>
+      <li><strong>Second-preimage resistance</strong>: given $m$, hard to find $m' \ne m$ with $H(m') = H(m)$.</li>
+      <li><strong>Collision resistance</strong>: hard to find <em>any</em> $m \ne m'$ with $H(m) = H(m')$.</li>
+    </ol>
+    <p>For an $n$-bit hash: brute-force preimage $\approx 2^n$. Brute-force collision $\approx 2^{n/2}$ (birthday).</p>
+
+```
+<h3>HMAC Construction</h3>
+<p>$\text{HMAC}(K, M) = H((K \oplus \text{opad}) \,\|\, H((K \oplus \text{ipad}) \,\|\, M))$ where opad = 0x5c repeated, ipad = 0x36 repeated. Two passes through hash $H$. Key needs to be padded to block length.</p>
+
+<h3>MAC vs Encryption order</h3>
+<ul>
+  <li><strong>Encrypt-then-MAC</strong>: best. Reject ciphertext before decrypting → resistant to chosen-ciphertext attacks.</li>
+  <li>MAC-then-Encrypt: weaker. Used in TLS &lt; 1.3 and SSL — caused real attacks.</li>
+  <li>Encrypt-and-MAC: weakest. MAC may leak info about plaintext.</li>
+</ul>
+
+<h3>The "scheme analysis" question (FA19 P18 / IMG hint)</h3>
+<p>Examiner gives a hash/MAC/auth scheme and asks: <em>"is it secure?"</em> or <em>"what does the receiver do to verify?"</em>. Method: trace each step. Look for missing nonces, missing IVs, unsigned values, replays, length-extension exposure (vanilla Merkle-Damgård).</p>
+```
+
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> If a hash function outputs 160 bits, roughly how many hash evaluations are needed to find a collision with 50% probability?</div>
+    <div class="input-row">
+      ≈&nbsp;<input type="text" id="ans-hash-1" placeholder="2^something">
+      <button onclick="checkText('hash-1','2^80')">Check</button>
+      <button class="solve" onclick="toggle('sol-hash-1')">Show solution</button>
+      <span class="verdict" id="ver-hash-1"></span>
+    </div>
+    <div class="solution" id="sol-hash-1">
+      <div class="step">Birthday bound: $2^{n/2} = 2^{80}$.</div>
+      <div class="ans">≈ 2^80</div>
+    </div>
+
+```
+<div class="problem" style="margin-top:1rem"><b>P2.</b> Why is "encrypt-then-MAC" preferred over "MAC-then-encrypt"?</div>
+<details><summary>Show answer</summary><div>The receiver can verify the MAC <em>before</em> decrypting. If the MAC fails, decryption never runs — preventing chosen-ciphertext oracles. With MAC-then-encrypt, you must decrypt first to see the MAC, and the decryption itself can leak information through padding errors etc. (the basis of the BEAST/Lucky-13 family of attacks).</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P3.</b> Approximately how many evaluations to find a preimage of a 128-bit hash output?</div>
+<div class="input-row">
+  ≈&nbsp;<input type="text" id="ans-hash-3" placeholder="2^something">
+  <button onclick="checkText('hash-3','2^128')">Check</button>
+  <button class="solve" onclick="toggle('sol-hash-3')">Show solution</button>
+  <span class="verdict" id="ver-hash-3"></span>
+</div>
+<div class="solution" id="sol-hash-3">
+  <div class="step">Preimage: brute-force is $2^n$ where $n$ is the output size in bits.</div>
+  <div class="ans">$\approx 2^{128}$</div>
+</div>
+
+<div class="problem" style="margin-top:1rem"><b>P4.</b> Output size of SHA-256? Of MD5?</div>
+<details><summary>Show answer</summary><div>SHA-256: 256 bits. MD5: 128 bits. SHA-1: 160 bits (deprecated, broken). SHA-512: 512 bits.</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P5.</b> What does a MAC provide that a plain hash function does not?</div>
+<details><summary>Show answer</summary><div>A MAC requires a shared secret <em>key</em>. This provides <strong>authentication</strong> — only someone with the key can produce a valid tag, so the receiver knows the message came from someone with the key. A plain hash provides only <em>integrity</em> against accidental corruption (anyone can recompute it on a tampered message).</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P6.</b> Why does HMAC use two passes through the hash function (with ipad/opad)?</div>
+<details><summary>Show answer</summary><div>Defends against length-extension attacks. A naive MAC = $H(K \| M)$ is broken: an attacker can extend $M$ to $M \| \text{padding} \| M'$ and compute the new MAC without knowing $K$, thanks to Merkle-Damgård's iterative structure. The double-hash construction $H(K_o \| H(K_i \| M))$ wraps the inner hash output, blocking the extension.</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P7.</b> An attacker collects $2^{40}$ message-MAC pairs from a 64-bit MAC system. What's the security implication?</div>
+<details><summary>Show answer</summary><div>Birthday attack territory. With $2^{n/2} = 2^{32}$ samples, collision probability becomes ~50%. At $2^{40}$ they almost certainly have collisions. If the attacker can submit chosen messages or get arbitrary MACs, this is catastrophic. 64-bit MACs are too short for serious systems — modern designs use 128 bits or more.</div></details>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    17 · SCHNORR ZKP                           -->
+
+<!-- ============================================================ -->
+
+<section id="schnorr">
+  <div class="num">§17 · Auth Protocols</div>
+  <h2>Schnorr-style Discrete-Log Proof</h2>
+  <p class="tagline"><span class="tag tier2">Tier 2</span><span class="tag recur">FA08 P13, FA12 P13</span> "What does Victor check?" The recurring zero-knowledge problem.</p>
+
+  <div class="method">
+    <h3>Setup</h3>
+    <p>Public: prime $p$, generator $g$, $y = g^s \bmod p$. Secret: $s$ (Peggy/Alice knows it).</p>
+    <h3>Protocol</h3>
+    <ol>
+      <li>Peggy picks random $k$, sends $\gamma = g^k \bmod p$ to Victor.</li>
+      <li>Victor sends random challenge $r$.</li>
+      <li>Peggy sends $z = k - sr \bmod (p-1)$.</li>
+      <li>Victor checks: <strong>does $\gamma \equiv g^z \cdot y^r \pmod p$?</strong></li>
+    </ol>
+    <h3>Why it works</h3>
+    <p>$g^z \cdot y^r = g^{k-sr} \cdot g^{sr} = g^k = \gamma$. Knowing $s$ allows Peggy to produce a valid $z$. Without $s$, she'd have to guess $r$ before committing $\gamma$, which has negligible chance.</p>
+    <div class="callout"><b>Memorize the equation:</b> $\gamma \equiv g^z \cdot y^r \pmod p$. That is the answer to "what does Victor check?". Show the algebra of why it equals $\gamma$ when $z = k - sr$.</div>
+  </div>
+
+  <div class="practice">
+    <h3>Your Turn</h3>
+    <div class="problem"><b>P1.</b> Suppose Peggy doesn't know $s$ and tries to cheat. After committing $\gamma$, what's the probability she can produce a valid $z$ for an arbitrary random $r$ chosen by Victor?</div>
+    <details><summary>Show answer</summary><div>Negligible — at most $1/(p-1)$ per round. To cheat, she'd have to guess $r$ before committing $\gamma$. Each round repeated → exponentially small probability.</div></details>
+
+```
+<div class="problem" style="margin-top:1rem"><b>P2.</b> Why must Peggy use a fresh random $k$ each session? What goes wrong if she reuses $k$?</div>
+<details><summary>Show answer</summary><div>Catastrophic. If she reuses $k$, an attacker observing two transcripts $(\gamma, r_1, z_1)$ and $(\gamma, r_2, z_2)$ recovers $s$:
+  <div class="step">$z_1 - z_2 = (k - sr_1) - (k - sr_2) = s(r_2 - r_1) \pmod{p-1}$</div>
+  <div class="step">So $s = (z_1 - z_2) \cdot (r_2 - r_1)^{-1} \pmod{p-1}$.</div>
+  Same trap that broke the Sony PS3's ECDSA implementation in 2010.</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P3.</b> What property does this protocol have that "send $s$ directly" does not?</div>
+<details><summary>Show answer</summary><div>Zero-knowledge. Peggy proves possession of $s$ without revealing any information about $s$ — Victor learns only that Peggy knows the discrete log of $y$. Repeating the protocol gives Victor confidence but never reveals $s$.</div></details>
+
+<div class="problem" style="margin-top:1rem"><b>P4.</b> $p = 23$, $g = 5$, $s = 4$ so $y = g^s = 5^4 \bmod 23 = 4$. Peggy picks $k = 7$ → $\gamma = 5^7 \bmod 23$. Victor sends challenge $r = 3$. What is $z$ that Peggy sends?</div>
+<div class="input-row">
+  z =&nbsp;<input type="text" id="ans-schnorr-4" placeholder="integer">
+  <button onclick="check('schnorr-4','17')">Check</button>
+  <button class="solve" onclick="toggle('sol-schnorr-4')">Show solution</button>
+  <span class="verdict" id="ver-schnorr-4"></span>
+</div>
+<div class="solution" id="sol-schnorr-4">
+  <div class="step"><b>1.</b> $z = k - sr \bmod (p-1) = 7 - 4 \cdot 3 \bmod 22 = -5 \bmod 22 = 17$.</div>
+  <div class="step"><b>2.</b> Sanity check (Victor's verification): $\gamma \stackrel{?}{=} g^z \cdot y^r \pmod p$.</div>
+  <div class="step">$\gamma = 5^7 \bmod 23$. Powers: $5^2 = 2$, $5^4 = 4$, $5^6 = 8$ (since $4 \cdot 2 = 8$), $5^7 = 40 \equiv 17$.</div>
+  <div class="step">$g^z \cdot y^r = 5^{17} \cdot 4^3 \bmod 23$. $5^{17} = 5^{16} \cdot 5 = (5^4)^4 \cdot 5 = 4^4 \cdot 5 = 256 \cdot 5 \equiv 3 \cdot 5 = 15$ (since $256 = 11 \cdot 23 + 3$). $4^3 = 64 \equiv 18$. $15 \cdot 18 = 270 \equiv 270 - 11 \cdot 23 = 17$. ✓</div>
+  <div class="ans">z = 17</div>
+</div>
+```
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+
+<!--                    18 · CONCEPTS                              -->
+
+<!-- ============================================================ -->
+
+<section id="concepts">
+  <div class="num">§18 · Cheatsheet</div>
+  <h2>Problem 1 — Conceptual Short Answers</h2>
+  <p class="tagline"><span class="tag tier1">Tier 1</span><span class="tag recur">Every year, ~20 points</span> The professor's recurring concept block. Short, crisp answers win.</p>
+
+  <div class="method">
+    <h3>The Standard Question Bank</h3>
+  </div>
+
+  <div class="example">
+    <h3>Q · Number of keys for N users</h3>
+    <div class="step"><b>Symmetric:</b> each pair shares one secret key → $\binom{N}{2} = \frac{N(N-1)}{2}$ keys total.</div>
+    <div class="step"><b>Public-key:</b> each user has 1 public + 1 private = $2N$ keys total. Massive scaling advantage.</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · Why use a nonce?</h3>
+    <div class="step">To prevent <strong>replay attacks</strong>. The nonce ties a message to a specific session/instance, so an attacker can't re-send a captured authentic message and have it accepted again.</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · Limitation of timestamps</h3>
+    <div class="step">Requires <strong>synchronized clocks</strong> across parties. Clock drift, network delay, and time-zone differences create a window where (a) legitimate messages get rejected as stale, or (b) attackers can replay within the tolerance window. Hard to maintain in a distributed system.</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · Encrypt before or after compression?</h3>
+    <div class="step">Compress <strong>before</strong> encrypting. Encrypted data is essentially random-looking → it doesn't compress at all. So you must compress while plaintext still has redundancy.</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · MAC then encrypt, or encrypt then MAC?</h3>
+    <div class="step">Best: <strong>Encrypt-then-MAC</strong>. The MAC covers the ciphertext, so receiver verifies authenticity <em>before</em> decrypting → no chosen-ciphertext oracle. Used in IPsec, SSH, TLS 1.3.</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · PGP — confidential + authenticated email</h3>
+    <div class="step">Alice signs her message with her private key (authentication), then encrypts the result with Bob's public key (confidentiality). Bob decrypts with his private key, then verifies signature with Alice's public key.</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · PGP trust model</h3>
+    <div class="step"><strong>Web of trust</strong>. No central authority. Each user maintains a keyring with trust ratings: each public key is signed by other users; trust in a key is computed from the signatures' trust levels (full / marginal / none).</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · SSL — services and protocols</h3>
+    <div class="step"><b>Services:</b> confidentiality (symmetric encryption), message integrity (MAC), peer authentication (typically server-only via certificates), and replay protection (sequence numbers).</div>
+    <div class="step"><b>Protocols:</b> Handshake, Change Cipher Spec, Alert, and Record protocols.</div>
+    <div class="step"><b>Shared secrets between peers:</b> typically <em>6</em> — for each direction (client→server, server→client): one MAC secret, one encryption key, one IV. (Some textbooks count 4 if IV isn't separate.)</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · Fiat-Shamir cheating probability</h3>
+    <div class="step">Simplified Fiat-Shamir: cheater succeeds with probability $1/2$ per round. After $t$ rounds: $1/2^t$. The full Fiat-Shamir uses $k$ secrets in parallel → $1/2^k$ per round.</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · Square-root commitment — proving the commitment was wrong</h3>
+    <div class="step">Reveal the square root. If the committer claimed $c = x^2 \bmod n$ and now claims a different $x'$ also satisfies $c = x'^2 \bmod n$, then $x \ne \pm x' \pmod n$ exposes a non-trivial square root, which factors $n$ — proving inconsistency.</div>
+  </div>
+
+  <div class="example">
+    <h3>Q · Homomorphic commitment / encryption</h3>
+    <div class="step">Allows operations on ciphertexts that translate to operations on plaintexts. Example: ElGamal is multiplicatively homomorphic: $E(M_1) \cdot E(M_2) = E(M_1 M_2)$. Application: secret-ballot voting (sum encrypted votes without decrypting individuals).</div>
+  </div>
+
+  <div class="practice">
+    <h3>Self-Quiz</h3>
+    <div class="problem">Cover the right side. Answer each, then check.</div>
+    <div style="margin-top:.6rem"><details><summary>How many keys for 100 users with symmetric encryption?</summary><div>$\binom{100}{2} = 4950$.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>What does the receiver do in a digital signature scheme using RSA?</summary><div>Compute $V = S^e \bmod n$ from sender's signature $S$ using sender's <em>public</em> key. Compare $V$ to a fresh hash of the message. Equal → valid.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>Why is collision resistance harder than preimage resistance?</summary><div>Birthday paradox. For an $n$-bit hash, preimage takes $2^n$ attempts but collision takes only $2^{n/2}$.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>Difference between authentication and integrity?</summary><div>Integrity: data wasn't modified. Authentication: data came from a specific identified source. A MAC provides both. A plain hash (with no key) provides integrity only against accidental change, not malicious tampering.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>Forward secrecy — what is it?</summary><div>Compromise of a long-term key does not compromise past session keys. Achieved by ephemeral DH at each session.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>How many keys for 50 users with public-key encryption?</summary><div>$2N = 100$ keys total (each user has one public + one private). Compare to $\binom{50}{2} = 1225$ for symmetric. The scaling difference is the killer argument for public key.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>What is the goal of a chosen-plaintext attack?</summary><div>The attacker can encrypt arbitrary plaintexts of their choice (using the encryption oracle, e.g. Alice's public key in RSA) and use the resulting ciphertexts to deduce something about the key, the cipher's structure, or another target ciphertext's plaintext. Pure RSA without padding is vulnerable; padding schemes like OAEP defend against this.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>Why is "textbook RSA" (no padding) insecure even though factoring $n$ is hard?</summary><div>Several reasons. Deterministic: same M always gives same C → leak through chosen-plaintext. Multiplicatively homomorphic: $E(M_1) \cdot E(M_2) = E(M_1 M_2)$ enables chosen-ciphertext attacks. Small-message attacks: if $M^e < n$, ciphertext is just $M^e$ and you can take the integer $e$-th root. OAEP padding fixes all of these.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>Difference between a digital signature and a MAC?</summary><div>MAC uses a <em>shared symmetric</em> key — both parties can produce and verify, so neither can prove which one made the tag (no non-repudiation). Digital signature uses asymmetric keys — only the holder of the private key can sign, but anyone with the public key can verify. Provides non-repudiation: signer cannot later deny signing.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>What is a man-in-the-middle attack on plain Diffie-Hellman?</summary><div>Eve intercepts both sides. She sends her own $Y_E$ to Alice (pretending to be Bob) and to Bob (pretending to be Alice). She establishes one shared key with each. She can read and re-encrypt all traffic. Defeated by <em>authenticated</em> DH — sign the public values with long-term keys, or use a station-to-station protocol with certificates.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>What is the discrete logarithm problem?</summary><div>Given prime $p$, generator $g$, and $y = g^x \bmod p$, find $x$. No efficient classical algorithm is known for large $p$. Hardness underpins DH, ElGamal, DSA, Schnorr. Shor's algorithm breaks it on a quantum computer.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>SSL handshake — what gets exchanged?</summary><div>1) ClientHello (proposed cipher suites, random nonce). 2) ServerHello (chosen suite, server random, server certificate, server key exchange if needed). 3) Client verifies cert, generates pre-master secret, encrypts with server's public key. 4) Both derive master secret + session keys from pre-master + nonces. 5) ChangeCipherSpec + Finished messages confirm both sides have the keys.</div></details></div>
+    <div style="margin-top:.6rem"><details><summary>What are the 6 secrets shared between two SSL peers?</summary><div>For each direction (client→server and server→client): MAC secret, encryption key, IV. Total: 6. These are derived from the master secret using a key-derivation function and the client/server random nonces.</div></details></div>
+  </div>
+</section>
+
+<div class="flourish">· · ·</div>
+
+<footer>
+  Built for the cramming. Burn this notebook after May 12.<br>
+  If a topic looks unfamiliar, don't skip it — that's where you'll lose points.
+</footer>
+
+</main>
+</div>
+
+<script>
+// Days countdown
+(function(){
+  const exam = new Date('2026-05-12T08:00:00');
+  const today = new Date();
+  const diff = Math.ceil((exam - today)/(1000*60*60*24));
+  document.getElementById('days').textContent = diff > 0 ? diff : 'TODAY';
+})();
+
+// Active section highlighting
+const links = document.querySelectorAll('nav.toc a');
+const sections = document.querySelectorAll('section[id]');
+function updateActive(){
+  let cur = '';
+  sections.forEach(s => {
+    if(s.getBoundingClientRect().top - 80 < 0) cur = s.id;
+  });
+  links.forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + cur);
+  });
+}
+window.addEventListener('scroll', updateActive);
+updateActive();
+
+// Smooth scroll
+links.forEach(l => l.addEventListener('click', e => {
+  e.preventDefault();
+  const t = document.querySelector(l.getAttribute('href'));
+  if(t) t.scrollIntoView({behavior:'smooth',block:'start'});
+}));
+
+// Answer checking (numeric)
+function check(id, expected){
+  const inp = document.getElementById('ans-' + id);
+  const v = inp.value.trim();
+  const ver = document.getElementById('ver-' + id);
+  if(v === expected){
+    ver.textContent = '✓ correct';
+    ver.className = 'verdict right';
+  } else if(v === ''){
+    ver.textContent = '— enter a value';
+    ver.className = 'verdict';
+  } else {
+    ver.textContent = '✗ try again';
+    ver.className = 'verdict wrong';
+  }
+}
+
+// Answer checking (text, case-insensitive)
+function checkText(id, expected){
+  const inp = document.getElementById('ans-' + id);
+  const v = inp.value.trim().toLowerCase().replace(/[\s,()]/g,'');
+  const exp = expected.toLowerCase().replace(/[\s,()]/g,'');
+  const ver = document.getElementById('ver-' + id);
+  if(v === exp){
+    ver.textContent = '✓ correct';
+    ver.className = 'verdict right';
+  } else if(v === ''){
+    ver.textContent = '— enter a value';
+    ver.className = 'verdict';
+  } else {
+    ver.textContent = '✗ try again';
+    ver.className = 'verdict wrong';
+  }
+}
+
+// Show/hide solution
+function toggle(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+}
+</script>
+
+</body>
+</html>
